@@ -1,0 +1,25 @@
+[package]
+name = "dxwr"
+version = "0.1.0"
+edition = "2021"
+description = "d3d12 and dxgi wrapper"
+license = "MIT"
+readme = "README.md"
+
+[dependencies]
+
+[dependencies.windows]
+version = "0.54.0"
+features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Graphics_Direct3D",
+    "Win32_Graphics_Direct3D12",
+    "Win32_Graphics_Dxgi",
+    "Win32_Graphics_Dxgi_Common",
+    "Win32_System_Threading",
+]
+
+[dev-dependencies]
+anyhow = "1.0.82"
+wiard = "0.1.5"

@@ -1,0 +1,63 @@
+use std::sync::Arc;
+use std::sync::OnceLock;
+use std::time::Duration;
+use windows::core::HSTRING;
+use windows::Win32::Foundation::{CloseHandle, HANDLE, WAIT_OBJECT_0};
+use windows::Win32::Graphics::Direct3D12::*;
+use windows::Win32::Graphics::Dxgi::*;
+use windows::Win32::System::Threading::{CreateEventW, WaitForSingleObject};
+
+pub(crate) struct EventHandle(HANDLE);
+
+impl EventHandle {
+    #[inline]
+    pub fn new() -> windows::core::Result<Self> {
+        unsafe { Ok(Self(CreateEventW(None, true, false, None)?)) }
+    }
+
+    #[inline]
+    pub fn wait_timeout(&self, d: Duration) -> windows::core::Result<bool> {
+        let d = d.as_millis();
+        assert!(d <= u32::MAX as u128);
+        unsafe { Ok(WaitForSingleObject(self.0, d as u32) == WAIT_OBJECT_0) }
+    }
+
+    #[inline]
+    pub fn handle(&self) -> HANDLE {
+        self.0
+    }
+}
+
+impl Drop for EventHandle {
+    fn drop(&mut self) {
+        unsafe {
+            CloseHandle(self.0).ok();
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct Name(Arc<String>);
+
+impl Name {
+    pub fn new<T>(object: &T, name: impl AsRef<str>) -> Self
+    where
+        T: Into<ID3D12Object> + Clone,
+    {
+        let object: ID3D12Object = object.clone().into();
+        unsafe {
+            object.SetName(&HSTRING::from(name.as_ref())).ok();
+        }
+        Self(Arc::new(name.as_ref().to_string()))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+#[inline]
+pub fn dxgi_factory() -> &'static IDXGIFactory7 {
+    static FACTORY: OnceLock<IDXGIFactory7> = OnceLock::new();
+    FACTORY.get_or_init(|| unsafe { CreateDXGIFactory1().unwrap() })
+}
