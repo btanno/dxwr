@@ -2,7 +2,7 @@ use super::*;
 use std::mem::ManuallyDrop;
 use windows::core::PCSTR;
 use windows::Win32::Graphics::Direct3D12::*;
-use windows::Win32::Graphics::Dxgi::Common::{DXGI_FORMAT, DXGI_SAMPLE_DESC};
+use windows::Win32::Graphics::Dxgi::Common::*;
 
 #[derive(Clone, Debug)]
 #[repr(transparent)]
@@ -24,6 +24,7 @@ impl<'a> ShaderBytecode<'a> {
     }
 }
 
+#[derive(Clone, Debug)]
 #[repr(transparent)]
 pub struct SoDeclarationEntry<'a> {
     entry: D3D12_SO_DECLARATION_ENTRY,
@@ -73,6 +74,7 @@ impl<'a> SoDeclarationEntry<'a> {
     }
 }
 
+#[derive(Clone, Debug)]
 #[repr(transparent)]
 pub struct StreamOutputDesc<'decl, 'strides> {
     desc: D3D12_STREAM_OUTPUT_DESC,
@@ -181,6 +183,7 @@ impl<'a> RenderTargetBlendDesc<'a> {
 }
 
 #[derive(Clone, Debug)]
+#[repr(transparent)]
 pub struct BlendDesc(D3D12_BLEND_DESC);
 
 impl BlendDesc {
@@ -232,6 +235,7 @@ impl Default for BlendDesc {
 }
 
 #[derive(Clone, Debug)]
+#[repr(transparent)]
 pub struct RasterizerDesc(D3D12_RASTERIZER_DESC);
 
 impl RasterizerDesc {
@@ -319,6 +323,7 @@ impl Default for RasterizerDesc {
 }
 
 #[derive(Clone, Debug)]
+#[repr(transparent)]
 pub struct DepthStencilOpDesc(D3D12_DEPTH_STENCILOP_DESC);
 
 impl DepthStencilOpDesc {
@@ -364,6 +369,7 @@ impl Default for DepthStencilOpDesc {
 }
 
 #[derive(Clone, Debug)]
+#[repr(transparent)]
 pub struct DepthStencilDesc(D3D12_DEPTH_STENCIL_DESC);
 
 impl DepthStencilDesc {
@@ -625,10 +631,6 @@ impl<'vs, 'ps, 'ds, 'hs, 'gs, 'so_decl, 'so_strides, 'input_layout>
         GraphicsPipelineStateDesc {
             desc: D3D12_GRAPHICS_PIPELINE_STATE_DESC {
                 GS: shader_bytecode.desc,
-                SampleDesc: DXGI_SAMPLE_DESC {
-                    Count: 1,
-                    Quality: 0,
-                },
                 ..self.desc
             },
             _gs: std::marker::PhantomData,
@@ -702,8 +704,8 @@ impl<'vs, 'ps, 'ds, 'hs, 'gs, 'so_decl, 'so_strides, 'input_layout>
     }
 
     #[inline]
-    pub fn sample_desc(mut self, desc: DXGI_SAMPLE_DESC) -> Self {
-        self.desc.SampleDesc = desc;
+    pub fn sample_desc(mut self, desc: SampleDesc) -> Self {
+        self.desc.SampleDesc = desc.0;
         self
     }
 
@@ -777,8 +779,325 @@ impl<'cs> ComputePipelineStateDesc<'cs> {
     }
 }
 
+#[repr(transparent)]
+pub struct Vs<'a>(pub ShaderBytecode<'a>);
+
+#[repr(transparent)]
+pub struct Ps<'a>(pub ShaderBytecode<'a>);
+
+#[repr(transparent)]
+pub struct Ds<'a>(pub ShaderBytecode<'a>);
+
+#[repr(transparent)]
+pub struct Hs<'a>(pub ShaderBytecode<'a>);
+
+#[repr(transparent)]
+pub struct Gs<'a>(pub ShaderBytecode<'a>);
+
+#[repr(transparent)]
+pub struct Ms<'a>(pub ShaderBytecode<'a>);
+
+#[repr(transparent)]
+pub struct As<'a>(pub ShaderBytecode<'a>);
+
+#[repr(transparent)]
+pub struct SampleMask(pub u32);
+
+#[repr(transparent)]
+pub struct IbStripCutValue(pub D3D12_INDEX_BUFFER_STRIP_CUT_VALUE);
+
+#[repr(transparent)]
+pub struct InputLayout<'a, 'b>(pub &'a [InputElementDesc<'b>]);
+
+#[repr(transparent)]
+pub struct PrimitiveTopologyType(pub D3D12_PRIMITIVE_TOPOLOGY_TYPE);
+
+#[repr(transparent)]
+pub struct RenderTargetFormats<'a>(pub &'a [DXGI_FORMAT]);
+
+#[repr(transparent)]
+pub struct DepthStencilFormat(pub DXGI_FORMAT);
+
+#[repr(transparent)]
+pub struct NodeMask(pub u32);
+
+#[repr(transparent)]
+pub struct PipelineFlags(pub D3D12_PIPELINE_STATE_FLAGS);
+
+#[repr(transparent)]
+pub struct ViewInstanceLocation(D3D12_VIEW_INSTANCE_LOCATION);
+
+impl ViewInstanceLocation {
+    #[inline]
+    pub fn new() -> Self {
+        Self(D3D12_VIEW_INSTANCE_LOCATION::default())
+    }
+
+    #[inline]
+    pub fn viewport_array_index(mut self, index: u32) -> Self {
+        self.0.ViewportArrayIndex = index;
+        self
+    }
+
+    #[inline]
+    pub fn render_target_array_index(mut self, index: u32) -> Self {
+        self.0.RenderTargetArrayIndex = index;
+        self
+    }
+}
+
+#[repr(transparent)]
+pub struct ViewInstancingDesc<'a> {
+    desc: D3D12_VIEW_INSTANCING_DESC,
+    _a: std::marker::PhantomData<&'a ()>,
+}
+
+impl<'a> ViewInstancingDesc<'a> {
+    #[inline]
+    pub fn new(locations: &'a [ViewInstanceLocation]) -> Self {
+        Self {
+            desc: D3D12_VIEW_INSTANCING_DESC {
+                ViewInstanceCount: locations.len() as u32,
+                pViewInstanceLocations: locations.as_ptr() as *const D3D12_VIEW_INSTANCE_LOCATION,
+                ..Default::default()
+            },
+            _a: std::marker::PhantomData,
+        }
+    }
+
+    #[inline]
+    pub fn flags(mut self, flags: D3D12_VIEW_INSTANCING_FLAGS) -> Self {
+        self.desc.Flags = flags;
+        self
+    }
+}
+
+pub trait Subobject {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE;
+    type Inner;
+
+    fn new(self) -> Self::Inner;
+}
+
+impl Subobject for RootSignature {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE;
+    type Inner = ID3D12RootSignature;
+
+    fn new(self) -> Self::Inner {
+        self.handle().clone()
+    }
+}
+
+impl<'a> Subobject for Vs<'a> {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl<'a> Subobject for Ps<'a> {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PS;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl<'a> Subobject for Ds<'a> {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DS;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl<'a> Subobject for Hs<'a> {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_HS;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl<'a> Subobject for Gs<'a> {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_GS;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl<'decl, 'strides> Subobject for StreamOutputDesc<'decl, 'strides> {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_STREAM_OUTPUT;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl Subobject for BlendDesc {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl Subobject for SampleMask {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl Subobject for RasterizerDesc {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl Subobject for DepthStencilDesc {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl<'a, 'b> Subobject for InputLayout<'a, 'b> {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl Subobject for IbStripCutValue {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_IB_STRIP_CUT_VALUE;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl Subobject for PrimitiveTopologyType {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl<'a> Subobject for RenderTargetFormats<'a> {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS;
+    type Inner = D3D12_RT_FORMAT_ARRAY;
+
+    fn new(self) -> Self::Inner {
+        let mut inner = D3D12_RT_FORMAT_ARRAY {
+            RTFormats: [DXGI_FORMAT_UNKNOWN; 8],
+            NumRenderTargets: self.0.len() as u32,
+        };
+        inner.RTFormats[..self.0.len()].copy_from_slice(self.0);
+        inner
+    }
+}
+
+impl Subobject for DepthStencilFormat {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL_FORMAT;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl Subobject for SampleDesc {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
+        D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_DESC;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+#[repr(C, align(8))]
+pub struct StreamSubobject<T: Subobject> {
+    ty: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE,
+    inner: T::Inner,
+}
+
+impl<T> StreamSubobject<T>
+where
+    T: Subobject,
+{
+    #[inline]
+    pub fn new(object: T) -> Self {
+        Self {
+            ty: T::VALUE,
+            inner: object.new(),
+        }
+    }
+}
+
+impl<T> Default for StreamSubobject<T>
+where
+    T: Default + Subobject,
+{
+    #[inline]
+    fn default() -> Self {
+        Self::new(T::default())
+    }
+}
+
+#[repr(transparent)]
+pub struct PipelineStateStreamDesc<'a, T> {
+    desc: D3D12_PIPELINE_STATE_STREAM_DESC,
+    _a: std::marker::PhantomData<&'a T>,
+}
+
+impl<'a, T> PipelineStateStreamDesc<'a, T> {
+    #[inline]
+    pub fn new(object: &'a T) -> Self {
+        Self {
+            desc: D3D12_PIPELINE_STATE_STREAM_DESC {
+                pPipelineStateSubobjectStream: object as *const _ as *mut _,
+                SizeInBytes: std::mem::size_of::<T>(),
+            },
+            _a: std::marker::PhantomData,
+        }
+    }
+}
+
 pub struct Builder<T = ()> {
-    device: ID3D12Device,
+    device: ID3D12Device4,
     desc: T,
     name: Option<String>,
 }
@@ -787,7 +1106,7 @@ impl Builder<()> {
     #[inline]
     fn new<T>(device: &T) -> Self
     where
-        T: Into<ID3D12Device> + Clone,
+        T: Into<ID3D12Device4> + Clone,
     {
         let device = device.clone().into();
         Self {
@@ -836,6 +1155,15 @@ impl<'cs> Builder<ComputePipelineStateDesc<'cs>> {
         let handle = unsafe { self.device.CreateComputePipelineState(&self.desc.desc) };
         ManuallyDrop::into_inner(self.desc.desc.pRootSignature);
         let handle = handle?;
+        let name = self.name.as_ref().map(|n| Name::new(&handle, n));
+        Ok(PipelineState { handle, name })
+    }
+}
+
+impl<'a, T> Builder<PipelineStateStreamDesc<'a, T>> {
+    #[inline]
+    pub fn build(self) -> windows::core::Result<PipelineState> {
+        let handle = unsafe { self.device.CreatePipelineState(&self.desc.desc)? };
         let name = self.name.as_ref().map(|n| Name::new(&handle, n));
         Ok(PipelineState { handle, name })
     }

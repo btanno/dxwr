@@ -125,7 +125,13 @@ impl Builder<CommandQueue<command_list_type::Direct>> {
         let factory = dxgi_factory();
         let handle: IDXGISwapChain4 = unsafe {
             factory
-                .CreateSwapChainForHwnd(self.cmd_queue.handle(), HWND(hwnd), &self.desc, None, None)?
+                .CreateSwapChainForHwnd(
+                    self.cmd_queue.handle(),
+                    HWND(hwnd),
+                    &self.desc,
+                    None,
+                    None,
+                )?
                 .cast()
                 .unwrap()
         };
@@ -159,7 +165,12 @@ impl SwapChain {
     }
 
     #[inline]
-    pub fn present(&self, fence: &Fence, interval: u32, flags: u32) -> windows::core::Result<Signal> {
+    pub fn present(
+        &self,
+        fence: &Fence,
+        interval: u32,
+        flags: u32,
+    ) -> windows::core::Result<Signal> {
         unsafe {
             self.handle.Present(interval, flags).ok()?;
         }

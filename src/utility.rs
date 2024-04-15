@@ -4,7 +4,7 @@ use std::time::Duration;
 use windows::core::HSTRING;
 use windows::Win32::Foundation::{CloseHandle, HANDLE, WAIT_OBJECT_0};
 use windows::Win32::Graphics::Direct3D12::*;
-use windows::Win32::Graphics::Dxgi::*;
+use windows::Win32::Graphics::Dxgi::{Common::*, *};
 use windows::Win32::System::Threading::{CreateEventW, WaitForSingleObject};
 
 pub(crate) struct EventHandle(HANDLE);
@@ -60,4 +60,25 @@ impl Name {
 pub fn dxgi_factory() -> &'static IDXGIFactory7 {
     static FACTORY: OnceLock<IDXGIFactory7> = OnceLock::new();
     FACTORY.get_or_init(|| unsafe { CreateDXGIFactory1().unwrap() })
+}
+
+#[derive(Clone, Copy, Debug)]
+#[repr(transparent)]
+pub struct SampleDesc(pub DXGI_SAMPLE_DESC);
+
+impl SampleDesc {
+    #[inline]
+    pub fn new(count: u32, quality: u32) -> Self {
+        Self(DXGI_SAMPLE_DESC {
+            Count: count,
+            Quality: quality,
+        })
+    }
+}
+
+impl Default for SampleDesc {
+    #[inline]
+    fn default() -> Self {
+        Self::new(1, 0)
+    }
 }
