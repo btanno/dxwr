@@ -3,6 +3,7 @@ mod command_allocator;
 mod command_list;
 pub mod command_list_type;
 mod command_queue;
+mod debug;
 mod descriptor_heap;
 mod device;
 mod fence;
@@ -12,7 +13,6 @@ mod resources;
 mod root_signature;
 mod swap_chain;
 mod utility;
-mod debug;
 
 pub mod d3d {
     pub use windows::Win32::Graphics::Direct3D::*;
@@ -30,8 +30,9 @@ pub type Rect = windows::Win32::Foundation::RECT;
 
 pub use adapter::{enum_adapters, Adapter, AdapterId, AdapterMemoryInfo};
 pub use command_allocator::CommandAllocator;
-pub use command_list::{GraphicsCommandList, VertexBufferView, IndexBufferView};
+pub use command_list::{GraphicsCommandList, IndexBufferView, VertexBufferView};
 pub use command_queue::CommandQueue;
+pub use debug::*;
 pub use descriptor_heap::{
     descriptor_heap_type, CpuDescriptorHandle, DescriptorHeap, GpuDescriptorHandle,
 };
@@ -45,6 +46,6 @@ pub use root_signature::{
     StaticSamplerDesc,
 };
 pub use swap_chain::SwapChain;
-pub use debug::*;
+pub use utility::{dxgi_factory, SampleDesc};
 
 use utility::*;

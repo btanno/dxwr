@@ -176,9 +176,8 @@ impl ResourceDesc<Texture2D> {
     }
 
     #[inline]
-    pub fn sample_desc(mut self, count: u32, quality: u32) -> Self {
-        self.desc.SampleDesc.Count = count;
-        self.desc.SampleDesc.Quality = quality;
+    pub fn sample_desc(mut self, desc: SampleDesc) -> Self {
+        self.desc.SampleDesc = desc.0;
         self
     }
 

@@ -220,7 +220,7 @@ impl<'a> RootParameter<'a, root_parameter_type::Uav> {
 
 impl<'a, T> From<RootParameter<'a, T>> for RootParameter<'a, ()>
 where
-    T: RootParameterType
+    T: RootParameterType,
 {
     fn from(value: RootParameter<'a, T>) -> Self {
         Self {
@@ -293,7 +293,10 @@ impl<'params, 'samplers> RootSignatureDesc<'params, 'samplers> {
     }
 
     #[inline]
-    pub fn parameters<'a>(mut self, params: &'a [RootParameter<'_, ()>]) -> RootSignatureDesc<'a, 'samplers> {
+    pub fn parameters<'a>(
+        mut self,
+        params: &'a [RootParameter<'_, ()>],
+    ) -> RootSignatureDesc<'a, 'samplers> {
         self.desc.pParameters = params.as_ptr() as *const D3D12_ROOT_PARAMETER;
         self.desc.NumParameters = params.len() as u32;
         RootSignatureDesc {
@@ -342,10 +345,7 @@ impl Builder {
     }
 
     #[inline]
-    pub fn build_from_desc(
-        self,
-        desc: &RootSignatureDesc,
-    ) -> windows::core::Result<RootSignature> {
+    pub fn build_from_desc(self, desc: &RootSignatureDesc) -> windows::core::Result<RootSignature> {
         let blob = unsafe {
             let mut blob: Option<ID3DBlob> = None;
             D3D12SerializeRootSignature(&desc.desc, D3D_ROOT_SIGNATURE_VERSION_1, &mut blob, None)
