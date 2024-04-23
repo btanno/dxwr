@@ -82,3 +82,82 @@ impl Default for SampleDesc {
         Self::new(1, 0)
     }
 }
+
+#[derive(Clone, Copy, Debug)]
+#[repr(transparent)]
+pub struct GpuVirtualAddressRange(pub D3D12_GPU_VIRTUAL_ADDRESS_RANGE);
+
+impl GpuVirtualAddressRange {
+    #[inline]
+    pub fn new() -> Self {
+        Self(D3D12_GPU_VIRTUAL_ADDRESS_RANGE::default())
+    }
+
+    #[inline]
+    pub fn start_address(mut self, addr: u64) -> Self {
+        self.0.StartAddress = addr;
+        self
+    }
+
+    #[inline]
+    pub fn size_in_bytes(mut self, size: u64) -> Self {
+        self.0.SizeInBytes = size;
+        self
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+#[repr(transparent)]
+pub struct GpuVirtualAddressRangeAndStride(pub D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE);
+
+impl GpuVirtualAddressRangeAndStride {
+    #[inline]
+    pub fn new() -> Self {
+        Self(D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE::default())
+    }
+
+    #[inline]
+    pub fn start_address(mut self, addr: u64) -> Self {
+        self.0.StartAddress = addr;
+        self
+    }
+
+    #[inline]
+    pub fn size_in_bytes(mut self, size: u64) -> Self {
+        self.0.SizeInBytes = size;
+        self
+    }
+
+    #[inline]
+    pub fn stride_in_bytes(mut self, size: u64) -> Self {
+        self.0.StrideInBytes = size;
+        self
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct GpuVirtualAddress(pub u64);
+
+#[derive(Clone, Copy, Debug)]
+#[repr(transparent)]
+pub struct GpuVirtualAddressAndStride(pub D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE);
+
+impl GpuVirtualAddressAndStride {
+    #[inline]
+    pub fn new() -> Self {
+        Self(D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE::default())
+    }
+
+    #[inline]
+    pub fn start_address(mut self, addr: u64) -> Self {
+        self.0.StartAddress = addr;
+        self
+    }
+
+    #[inline]
+    pub fn stride_in_bytes(mut self, stride: u64) -> Self {
+        self.0.StrideInBytes = stride;
+        self
+    }
+}
+

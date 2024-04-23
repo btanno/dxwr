@@ -25,13 +25,13 @@ fn main() -> anyhow::Result<()> {
         .buffer_usage(DXGI_USAGE_RENDER_TARGET_OUTPUT)
         .swap_effect(DXGI_SWAP_EFFECT_FLIP_DISCARD)
         .build_for_hwnd(window.raw_handle())?;
-    let mut rtv = dxwr::DescriptorHeap::new(&device, dxwr::descriptor_heap_type::Rtv)
+    let mut rtv = dxwr::DescriptorHeap::new_rtv(&device)
         .len(BUFFER_COUNT)
         .build()?;
     let render_targets = (0..BUFFER_COUNT)
         .map(|i| -> anyhow::Result<dxwr::Resource> {
             let buffer = swap_chain.get_buffer(i)?;
-            rtv.create_view(i, &buffer, None);
+            rtv.create_render_target_view(i, &buffer, dxwr::RenderTargetViewDesc::none());
             Ok(buffer)
         })
         .collect::<anyhow::Result<Vec<_>>>()?;

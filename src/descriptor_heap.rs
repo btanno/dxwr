@@ -1,7 +1,7 @@
 use super::*;
 use std::ops::Bound;
 use std::sync::Arc;
-use windows::Win32::Graphics::Direct3D12::*;
+use windows::Win32::Graphics::{Direct3D12::*, Dxgi::Common::DXGI_FORMAT};
 
 pub trait Type {
     const VALUE: D3D12_DESCRIPTOR_HEAP_TYPE;
@@ -81,6 +81,978 @@ impl<T> Clone for GpuDescriptorHandle<T> {
             handle: self.handle.clone(),
             _t: std::marker::PhantomData,
         }
+    }
+}
+
+pub mod dimension {
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct Buffer;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct Texture1D;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct Texture1DArray;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct Texture2D;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct Texture2DArray;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct Texture2DMs;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct Texture2DMsArray;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct Texture3D;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct TextureCube;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct TextureCubeArray;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+    pub struct RaytracingAccelerationStructure;
+}
+
+#[repr(transparent)]
+pub struct ConstantBufferViewDesc(D3D12_CONSTANT_BUFFER_VIEW_DESC);
+
+impl ConstantBufferViewDesc {
+    #[inline]
+    pub fn new() -> Self {
+        Self(D3D12_CONSTANT_BUFFER_VIEW_DESC::default())
+    }
+
+    #[inline]
+    pub fn buffer_location(mut self, loc: u64) -> Self {
+        self.0.BufferLocation = loc;
+        self
+    }
+
+    #[inline]
+    pub fn size_in_bytes(mut self, size: u32) -> Self {
+        self.0.SizeInBytes = size;
+        self
+    }
+}
+
+#[repr(transparent)]
+pub struct ShaderResourceViewDesc<T = ()> {
+    desc: D3D12_SHADER_RESOURCE_VIEW_DESC,
+    _t: std::marker::PhantomData<T>,
+}
+
+impl ShaderResourceViewDesc<()> {
+    fn new<T>(dimension: D3D12_SRV_DIMENSION) -> ShaderResourceViewDesc<T> {
+        ShaderResourceViewDesc {
+            desc: D3D12_SHADER_RESOURCE_VIEW_DESC {
+                ViewDimension: dimension,
+                Shader4ComponentMapping: D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
+                ..Default::default()
+            },
+            _t: std::marker::PhantomData,
+        }
+    }
+
+    #[inline]
+    pub fn buffer() -> ShaderResourceViewDesc<dimension::Buffer> {
+        Self::new(D3D12_SRV_DIMENSION_BUFFER)
+    }
+
+    #[inline]
+    pub fn texture1d() -> ShaderResourceViewDesc<dimension::Texture1D> {
+        Self::new(D3D12_SRV_DIMENSION_TEXTURE1D)
+    }
+
+    #[inline]
+    pub fn texture1d_array() -> ShaderResourceViewDesc<dimension::Texture1DArray> {
+        Self::new(D3D12_SRV_DIMENSION_TEXTURE1DARRAY)
+    }
+
+    #[inline]
+    pub fn texture2d() -> ShaderResourceViewDesc<dimension::Texture2D> {
+        Self::new(D3D12_SRV_DIMENSION_TEXTURE2D)
+    }
+
+    #[inline]
+    pub fn texture2d_array() -> ShaderResourceViewDesc<dimension::Texture2DArray> {
+        Self::new(D3D12_SRV_DIMENSION_TEXTURE2DARRAY)
+    }
+
+    #[inline]
+    pub fn texture2d_ms() -> ShaderResourceViewDesc<dimension::Texture2DMs> {
+        Self::new(D3D12_SRV_DIMENSION_TEXTURE2DMS)
+    }
+
+    #[inline]
+    pub fn texture2d_ms_array() -> ShaderResourceViewDesc<dimension::Texture2DMsArray> {
+        Self::new(D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY)
+    }
+
+    #[inline]
+    pub fn texture3d() -> ShaderResourceViewDesc<dimension::Texture3D> {
+        Self::new(D3D12_SRV_DIMENSION_TEXTURE3D)
+    }
+
+    #[inline]
+    pub fn texture_cube() -> ShaderResourceViewDesc<dimension::TextureCube> {
+        Self::new(D3D12_SRV_DIMENSION_TEXTURECUBE)
+    }
+
+    #[inline]
+    pub fn texture_cube_array() -> ShaderResourceViewDesc<dimension::TextureCubeArray> {
+        Self::new(D3D12_SRV_DIMENSION_TEXTURECUBEARRAY)
+    }
+
+    #[inline]
+    pub fn raytracing_acceleration_structure(
+    ) -> ShaderResourceViewDesc<dimension::RaytracingAccelerationStructure> {
+        Self::new(D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE)
+    }
+
+    #[inline]
+    pub fn none() -> Option<&'static Self> {
+        None
+    }
+}
+
+impl<T> ShaderResourceViewDesc<T> {
+    #[inline]
+    pub fn format(mut self, format: DXGI_FORMAT) -> Self {
+        self.desc.Format = format;
+        self
+    }
+
+    #[inline]
+    pub fn shader_4_component_mapping(mut self, mapping: u32) -> Self {
+        self.desc.Shader4ComponentMapping = mapping;
+        self
+    }
+}
+
+impl ShaderResourceViewDesc<dimension::Buffer> {
+    #[inline]
+    pub fn first_element(mut self, element: u64) -> Self {
+        self.desc.Anonymous.Buffer.FirstElement = element;
+        self
+    }
+
+    #[inline]
+    pub fn num_elements(mut self, n: u32) -> Self {
+        self.desc.Anonymous.Buffer.NumElements = n;
+        self
+    }
+
+    #[inline]
+    pub fn structure_byte_stride(mut self, stride: u32) -> Self {
+        self.desc.Anonymous.Buffer.StructureByteStride = stride;
+        self
+    }
+
+    #[inline]
+    pub fn flags(mut self, flags: D3D12_BUFFER_SRV_FLAGS) -> Self {
+        self.desc.Anonymous.Buffer.Flags = flags;
+        self
+    }
+}
+
+impl ShaderResourceViewDesc<dimension::Texture1D> {
+    #[inline]
+    pub fn most_detailed_mip(mut self, mip: u32) -> Self {
+        self.desc.Anonymous.Texture1D.MostDetailedMip = mip;
+        self
+    }
+
+    #[inline]
+    pub fn mip_levels(mut self, levels: u32) -> Self {
+        self.desc.Anonymous.Texture1D.MipLevels = levels;
+        self
+    }
+
+    #[inline]
+    pub fn resource_min_lod_clamp(mut self, clamp: f32) -> Self {
+        self.desc.Anonymous.Texture1D.ResourceMinLODClamp = clamp;
+        self
+    }
+}
+
+impl ShaderResourceViewDesc<dimension::Texture1DArray> {
+    #[inline]
+    pub fn most_detailed_mip(mut self, mip: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.MostDetailedMip = mip;
+        self
+    }
+
+    #[inline]
+    pub fn mip_levels(mut self, levels: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.MipLevels = levels;
+        self
+    }
+
+    #[inline]
+    pub fn resource_min_lod_clamp(mut self, clamp: f32) -> Self {
+        self.desc.Anonymous.Texture1DArray.ResourceMinLODClamp = clamp;
+        self
+    }
+
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.ArraySize = size;
+        self
+    }
+}
+
+impl ShaderResourceViewDesc<dimension::Texture2D> {
+    #[inline]
+    pub fn most_detailed_mip(mut self, mip: u32) -> Self {
+        self.desc.Anonymous.Texture2D.MostDetailedMip = mip;
+        self
+    }
+
+    #[inline]
+    pub fn mip_levels(mut self, levels: u32) -> Self {
+        self.desc.Anonymous.Texture2D.MipLevels = levels;
+        self
+    }
+
+    #[inline]
+    pub fn resource_min_lod_clamp(mut self, clamp: f32) -> Self {
+        self.desc.Anonymous.Texture2D.ResourceMinLODClamp = clamp;
+        self
+    }
+
+    #[inline]
+    pub fn plane_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2D.PlaneSlice = slice;
+        self
+    }
+}
+
+impl ShaderResourceViewDesc<dimension::Texture2DArray> {
+    #[inline]
+    pub fn most_detailed_mip(mut self, mip: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.MostDetailedMip = mip;
+        self
+    }
+
+    #[inline]
+    pub fn mip_levels(mut self, levels: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.MipLevels = levels;
+        self
+    }
+
+    #[inline]
+    pub fn resource_min_lod_clamp(mut self, clamp: f32) -> Self {
+        self.desc.Anonymous.Texture2DArray.ResourceMinLODClamp = clamp;
+        self
+    }
+
+    #[inline]
+    pub fn plane_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.PlaneSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.ArraySize = size;
+        self
+    }
+}
+
+impl ShaderResourceViewDesc<dimension::Texture2DMsArray> {
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DMSArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture2DMSArray.ArraySize = size;
+        self
+    }
+}
+
+impl ShaderResourceViewDesc<dimension::Texture3D> {
+    #[inline]
+    pub fn most_detailed_mip(mut self, mip: u32) -> Self {
+        self.desc.Anonymous.Texture3D.MostDetailedMip = mip;
+        self
+    }
+
+    #[inline]
+    pub fn mip_levels(mut self, levels: u32) -> Self {
+        self.desc.Anonymous.Texture3D.MipLevels = levels;
+        self
+    }
+
+    #[inline]
+    pub fn resource_min_lod_clamp(mut self, clamp: f32) -> Self {
+        self.desc.Anonymous.Texture3D.ResourceMinLODClamp = clamp;
+        self
+    }
+}
+
+impl ShaderResourceViewDesc<dimension::TextureCube> {
+    #[inline]
+    pub fn most_detailed_mip(mut self, mip: u32) -> Self {
+        self.desc.Anonymous.TextureCube.MostDetailedMip = mip;
+        self
+    }
+
+    #[inline]
+    pub fn mip_levels(mut self, levels: u32) -> Self {
+        self.desc.Anonymous.TextureCube.MipLevels = levels;
+        self
+    }
+
+    #[inline]
+    pub fn resource_min_lod_clamp(mut self, clamp: f32) -> Self {
+        self.desc.Anonymous.TextureCube.ResourceMinLODClamp = clamp;
+        self
+    }
+}
+
+impl ShaderResourceViewDesc<dimension::TextureCubeArray> {
+    #[inline]
+    pub fn most_detailed_mip(mut self, mip: u32) -> Self {
+        self.desc.Anonymous.TextureCube.MostDetailedMip = mip;
+        self
+    }
+
+    #[inline]
+    pub fn mip_levels(mut self, levels: u32) -> Self {
+        self.desc.Anonymous.TextureCube.MipLevels = levels;
+        self
+    }
+
+    #[inline]
+    pub fn resource_min_lod_clamp(mut self, clamp: f32) -> Self {
+        self.desc.Anonymous.TextureCube.ResourceMinLODClamp = clamp;
+        self
+    }
+
+    #[inline]
+    pub fn first_2d_array_face(mut self, face: u32) -> Self {
+        self.desc.Anonymous.TextureCubeArray.First2DArrayFace = face;
+        self
+    }
+
+    #[inline]
+    pub fn num_cubes(mut self, n: u32) -> Self {
+        self.desc.Anonymous.TextureCubeArray.NumCubes = n;
+        self
+    }
+}
+
+impl ShaderResourceViewDesc<dimension::RaytracingAccelerationStructure> {
+    #[inline]
+    pub fn location(mut self, loc: u64) -> Self {
+        self.desc.Anonymous.RaytracingAccelerationStructure.Location = loc;
+        self
+    }
+}
+
+#[repr(transparent)]
+pub struct UnorderedAccessViewDesc<T = ()> {
+    desc: D3D12_UNORDERED_ACCESS_VIEW_DESC,
+    _t: std::marker::PhantomData<T>,
+}
+
+impl UnorderedAccessViewDesc<()> {
+    fn new<T>(dimension: D3D12_UAV_DIMENSION) -> UnorderedAccessViewDesc<T> {
+        UnorderedAccessViewDesc {
+            desc: D3D12_UNORDERED_ACCESS_VIEW_DESC {
+                ViewDimension: dimension,
+                ..Default::default()
+            },
+            _t: std::marker::PhantomData,
+        }
+    }
+
+    #[inline]
+    pub fn buffer() -> UnorderedAccessViewDesc<dimension::Buffer> {
+        Self::new(D3D12_UAV_DIMENSION_BUFFER)
+    }
+
+    #[inline]
+    pub fn texture1d() -> UnorderedAccessViewDesc<dimension::Texture1D> {
+        Self::new(D3D12_UAV_DIMENSION_TEXTURE1D)
+    }
+
+    #[inline]
+    pub fn texture1d_array() -> UnorderedAccessViewDesc<dimension::Texture1DArray> {
+        Self::new(D3D12_UAV_DIMENSION_TEXTURE1DARRAY)
+    }
+
+    #[inline]
+    pub fn texture2d() -> UnorderedAccessViewDesc<dimension::Texture2D> {
+        Self::new(D3D12_UAV_DIMENSION_TEXTURE2D)
+    }
+
+    #[inline]
+    pub fn texture2d_array() -> UnorderedAccessViewDesc<dimension::Texture2DArray> {
+        Self::new(D3D12_UAV_DIMENSION_TEXTURE2DARRAY)
+    }
+
+    #[inline]
+    pub fn texture2d_ms() -> UnorderedAccessViewDesc<dimension::Texture2DMs> {
+        Self::new(D3D12_UAV_DIMENSION_TEXTURE2DMS)
+    }
+
+    #[inline]
+    pub fn texture2d_ms_array() -> UnorderedAccessViewDesc<dimension::Texture2DMsArray> {
+        Self::new(D3D12_UAV_DIMENSION_TEXTURE2DMSARRAY)
+    }
+
+    #[inline]
+    pub fn texture3d() -> UnorderedAccessViewDesc<dimension::Texture3D> {
+        Self::new(D3D12_UAV_DIMENSION_TEXTURE3D)
+    }
+
+    #[inline]
+    pub fn none() -> Option<&'static Self> {
+        None
+    }
+}
+
+impl<T> UnorderedAccessViewDesc<T> {
+    #[inline]
+    pub fn format(mut self, format: DXGI_FORMAT) -> Self {
+        self.desc.Format = format;
+        self
+    }
+}
+
+impl UnorderedAccessViewDesc<dimension::Buffer> {
+    #[inline]
+    pub fn first_element(mut self, element: u64) -> Self {
+        self.desc.Anonymous.Buffer.FirstElement = element;
+        self
+    }
+
+    #[inline]
+    pub fn num_elements(mut self, n: u32) -> Self {
+        self.desc.Anonymous.Buffer.NumElements = n;
+        self
+    }
+
+    #[inline]
+    pub fn structure_byte_stride(mut self, stride: u32) -> Self {
+        self.desc.Anonymous.Buffer.StructureByteStride = stride;
+        self
+    }
+
+    #[inline]
+    pub fn counter_offset_in_bytes(mut self, offset: u64) -> Self {
+        self.desc.Anonymous.Buffer.CounterOffsetInBytes = offset;
+        self
+    }
+
+    #[inline]
+    pub fn flags(mut self, flags: D3D12_BUFFER_UAV_FLAGS) -> Self {
+        self.desc.Anonymous.Buffer.Flags = flags;
+        self
+    }
+}
+
+impl UnorderedAccessViewDesc<dimension::Texture1D> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture1D.MipSlice = slice;
+        self
+    }
+}
+
+impl UnorderedAccessViewDesc<dimension::Texture1DArray> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.MipSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.ArraySize = size;
+        self
+    }
+}
+
+impl UnorderedAccessViewDesc<dimension::Texture2D> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2D.MipSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn plane_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2D.PlaneSlice = slice;
+        self
+    }
+}
+
+impl UnorderedAccessViewDesc<dimension::Texture2DArray> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.MipSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn plane_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.PlaneSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.ArraySize = size;
+        self
+    }
+}
+
+impl UnorderedAccessViewDesc<dimension::Texture2DMsArray> {
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DMSArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture2DMSArray.ArraySize = size;
+        self
+    }
+}
+
+impl UnorderedAccessViewDesc<dimension::Texture3D> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture3D.MipSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn first_w_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture3D.FirstWSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn w_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture3D.WSize = size;
+        self
+    }
+}
+
+#[repr(transparent)]
+pub struct RenderTargetViewDesc<T = ()> {
+    desc: D3D12_RENDER_TARGET_VIEW_DESC,
+    _t: std::marker::PhantomData<T>,
+}
+
+impl RenderTargetViewDesc<()> {
+    fn new<T>(dimension: D3D12_RTV_DIMENSION) -> RenderTargetViewDesc<T> {
+        RenderTargetViewDesc {
+            desc: D3D12_RENDER_TARGET_VIEW_DESC {
+                ViewDimension: dimension,
+                ..Default::default()
+            },
+            _t: std::marker::PhantomData,
+        }
+    }
+
+    #[inline]
+    pub fn buffer() -> RenderTargetViewDesc<dimension::Buffer> {
+        Self::new(D3D12_RTV_DIMENSION_BUFFER)
+    }
+
+    #[inline]
+    pub fn texture1d() -> RenderTargetViewDesc<dimension::Texture1D> {
+        Self::new(D3D12_RTV_DIMENSION_TEXTURE1D)
+    }
+
+    #[inline]
+    pub fn texture1d_array() -> RenderTargetViewDesc<dimension::Texture1DArray> {
+        Self::new(D3D12_RTV_DIMENSION_TEXTURE1DARRAY)
+    }
+
+    #[inline]
+    pub fn texture2d() -> RenderTargetViewDesc<dimension::Texture2D> {
+        Self::new(D3D12_RTV_DIMENSION_TEXTURE2D)
+    }
+
+    #[inline]
+    pub fn texture2d_array() -> RenderTargetViewDesc<dimension::Texture2DArray> {
+        Self::new(D3D12_RTV_DIMENSION_TEXTURE2DARRAY)
+    }
+
+    #[inline]
+    pub fn texture2d_ms() -> RenderTargetViewDesc<dimension::Texture2DMs> {
+        Self::new(D3D12_RTV_DIMENSION_TEXTURE2DMS)
+    }
+
+    #[inline]
+    pub fn texture2d_ms_array() -> RenderTargetViewDesc<dimension::Texture2DMsArray> {
+        Self::new(D3D12_RTV_DIMENSION_TEXTURE2DMSARRAY)
+    }
+
+    #[inline]
+    pub fn texture3d() -> RenderTargetViewDesc<dimension::Texture3D> {
+        Self::new(D3D12_RTV_DIMENSION_TEXTURE3D)
+    }
+
+    #[inline]
+    pub fn none() -> Option<&'static Self> {
+        None
+    }
+}
+
+impl RenderTargetViewDesc<dimension::Buffer> {
+    #[inline]
+    pub fn first_element(mut self, element: u64) -> Self {
+        self.desc.Anonymous.Buffer.FirstElement = element;
+        self
+    }
+
+    #[inline]
+    pub fn num_elements(mut self, n: u32) -> Self {
+        self.desc.Anonymous.Buffer.NumElements = n;
+        self
+    }
+}
+
+impl RenderTargetViewDesc<dimension::Texture1D> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture1D.MipSlice = slice;
+        self
+    }
+}
+
+impl RenderTargetViewDesc<dimension::Texture1DArray> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.MipSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.ArraySize = size;
+        self
+    }
+}
+
+impl RenderTargetViewDesc<dimension::Texture2D> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2D.MipSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn plane_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2D.PlaneSlice = slice;
+        self
+    }
+}
+
+impl RenderTargetViewDesc<dimension::Texture2DArray> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.MipSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn plane_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.PlaneSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.ArraySize = size;
+        self
+    }
+}
+
+impl RenderTargetViewDesc<dimension::Texture2DMsArray> {
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DMSArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture2DMSArray.ArraySize = size;
+        self
+    }
+}
+
+impl RenderTargetViewDesc<dimension::Texture3D> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture3D.MipSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn first_w_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture3D.FirstWSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn w_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture3D.WSize = size;
+        self
+    }
+}
+
+#[repr(transparent)]
+pub struct DepthStencilViewDesc<T = ()> {
+    desc: D3D12_DEPTH_STENCIL_VIEW_DESC,
+    _t: std::marker::PhantomData<T>,
+}
+
+impl DepthStencilViewDesc<()> {
+    fn new<T>(dimension: D3D12_DSV_DIMENSION) -> DepthStencilViewDesc<T> {
+        DepthStencilViewDesc {
+            desc: D3D12_DEPTH_STENCIL_VIEW_DESC {
+                ViewDimension: dimension,
+                ..Default::default()
+            },
+            _t: std::marker::PhantomData,
+        }
+    }
+
+    #[inline]
+    pub fn texture1d() -> DepthStencilViewDesc<dimension::Texture1D> {
+        Self::new(D3D12_DSV_DIMENSION_TEXTURE1D)
+    }
+
+    #[inline]
+    pub fn texture1d_array() -> DepthStencilViewDesc<dimension::Texture1DArray> {
+        Self::new(D3D12_DSV_DIMENSION_TEXTURE1DARRAY)
+    }
+
+    #[inline]
+    pub fn texture2d() -> DepthStencilViewDesc<dimension::Texture2D> {
+        Self::new(D3D12_DSV_DIMENSION_TEXTURE2D)
+    }
+
+    #[inline]
+    pub fn texture2d_array() -> DepthStencilViewDesc<dimension::Texture2DArray> {
+        Self::new(D3D12_DSV_DIMENSION_TEXTURE2DARRAY)
+    }
+
+    #[inline]
+    pub fn texture2d_ms() -> DepthStencilViewDesc<dimension::Texture2DMs> {
+        Self::new(D3D12_DSV_DIMENSION_TEXTURE2DMS)
+    }
+
+    #[inline]
+    pub fn texture2d_ms_array() -> DepthStencilViewDesc<dimension::Texture2DMsArray> {
+        Self::new(D3D12_DSV_DIMENSION_TEXTURE2DMSARRAY)
+    }
+
+    #[inline]
+    pub fn none() -> Option<&'static Self> {
+        None
+    }
+}
+
+impl<T> DepthStencilViewDesc<T> {
+    #[inline]
+    pub fn flags(mut self, flags: D3D12_DSV_FLAGS) -> Self {
+        self.desc.Flags = flags;
+        self
+    }
+}
+
+impl DepthStencilViewDesc<dimension::Texture1D> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture1D.MipSlice = slice;
+        self
+    }
+}
+
+impl DepthStencilViewDesc<dimension::Texture1DArray> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture1D.MipSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture1DArray.ArraySize = size;
+        self
+    }
+}
+
+impl DepthStencilViewDesc<dimension::Texture2D> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2D.MipSlice = slice;
+        self
+    }
+}
+
+impl DepthStencilViewDesc<dimension::Texture2DArray> {
+    #[inline]
+    pub fn mip_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.MipSlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture2DArray.ArraySize = size;
+        self
+    }
+}
+
+impl DepthStencilViewDesc<dimension::Texture2DMsArray> {
+    #[inline]
+    pub fn first_array_slice(mut self, slice: u32) -> Self {
+        self.desc.Anonymous.Texture2DMSArray.FirstArraySlice = slice;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u32) -> Self {
+        self.desc.Anonymous.Texture2DMSArray.ArraySize = size;
+        self
+    }
+}
+
+#[repr(transparent)]
+pub struct SamplerDesc(D3D12_SAMPLER_DESC);
+
+impl SamplerDesc {
+    #[inline]
+    pub fn new() -> Self {
+        Self(D3D12_SAMPLER_DESC::default())
+    }
+
+    #[inline]
+    pub fn filter(mut self, filter: D3D12_FILTER) -> Self {
+        self.0.Filter = filter;
+        self
+    }
+
+    #[inline]
+    pub fn address_u(mut self, mode: D3D12_TEXTURE_ADDRESS_MODE) -> Self {
+        self.0.AddressU = mode;
+        self
+    }
+
+    #[inline]
+    pub fn address_v(mut self, mode: D3D12_TEXTURE_ADDRESS_MODE) -> Self {
+        self.0.AddressV = mode;
+        self
+    }
+
+    #[inline]
+    pub fn address_w(mut self, mode: D3D12_TEXTURE_ADDRESS_MODE) -> Self {
+        self.0.AddressV = mode;
+        self
+    }
+
+    #[inline]
+    pub fn mip_lod_bias(mut self, bias: f32) -> Self {
+        self.0.MipLODBias = bias;
+        self
+    }
+
+    #[inline]
+    pub fn max_anisotropy(mut self, anisotropy: u32) -> Self {
+        self.0.MaxAnisotropy = anisotropy;
+        self
+    }
+
+    #[inline]
+    pub fn comparison_func(mut self, func: D3D12_COMPARISON_FUNC) -> Self {
+        self.0.ComparisonFunc = func;
+        self
+    }
+
+    #[inline]
+    pub fn border_color(mut self, color: [f32; 4]) -> Self {
+        self.0.BorderColor = color;
+        self
+    }
+
+    #[inline]
+    pub fn min_lod(mut self, lod: f32) -> Self {
+        self.0.MinLOD = lod;
+        self
+    }
+
+    #[inline]
+    pub fn max_lod(mut self, lod: f32) -> Self {
+        self.0.MaxLOD = lod;
+        self
     }
 }
 
@@ -181,17 +1153,39 @@ struct Field<T> {
 }
 
 #[derive(Clone, Debug)]
-pub struct DescriptorHeap<T>(Arc<Field<T>>);
+pub struct DescriptorHeap<T = ()>(Arc<Field<T>>);
+
+impl DescriptorHeap<()> {
+    #[inline]
+    pub fn new<T: Type>(device: &Device, _ty: T) -> Builder<T> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_cbv_srv_uav(device: &Device) -> Builder<CbvSrvUav> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_rtv(device: &Device) -> Builder<Rtv> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_dsv(device: &Device) -> Builder<Dsv> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_sampler(device: &Device) -> Builder<Sampler> {
+        Builder::new(device.handle())
+    }
+}
 
 impl<T> DescriptorHeap<T>
 where
     T: Type,
 {
-    #[inline]
-    pub fn new(device: &Device, _ty: T) -> Builder<T> {
-        Builder::new(device.handle())
-    }
-
     #[inline]
     pub fn len(&self) -> usize {
         self.0.len
@@ -276,45 +1270,45 @@ impl DescriptorHeap<CbvSrvUav> {
     pub fn create_constant_buffer_view(
         &mut self,
         index: usize,
-        desc: Option<&D3D12_CONSTANT_BUFFER_VIEW_DESC>,
+        desc: Option<&ConstantBufferViewDesc>,
     ) {
         unsafe {
             self.0.device.CreateConstantBufferView(
-                desc.map(|d| d as *const _),
+                desc.map(|d| &d.0 as *const _),
                 self.cpu_handle(index).handle(),
             );
         }
     }
 
     #[inline]
-    pub fn create_shader_resource_view(
+    pub fn create_shader_resource_view<U>(
         &mut self,
         index: usize,
         resource: &Resource,
-        desc: Option<&D3D12_SHADER_RESOURCE_VIEW_DESC>,
+        desc: Option<&ShaderResourceViewDesc<U>>,
     ) {
         unsafe {
             self.0.device.CreateShaderResourceView(
                 resource.handle(),
-                desc.map(|d| d as *const _),
+                desc.map(|d| &d.desc as *const _),
                 self.cpu_handle(index).handle(),
             );
         }
     }
 
     #[inline]
-    pub fn create_unordered_access_view(
+    pub fn create_unordered_access_view<U>(
         &mut self,
         index: usize,
         resource: &Resource,
         counter_resource: Option<&Resource>,
-        desc: Option<&D3D12_UNORDERED_ACCESS_VIEW_DESC>,
+        desc: Option<&UnorderedAccessViewDesc<U>>,
     ) {
         unsafe {
             self.0.device.CreateUnorderedAccessView(
                 resource.handle(),
                 counter_resource.map(|r| r.handle()),
-                desc.map(|d| d as *const _),
+                desc.map(|d| &d.desc as *const _),
                 self.cpu_handle(index).handle(),
             );
         }
@@ -323,16 +1317,16 @@ impl DescriptorHeap<CbvSrvUav> {
 
 impl DescriptorHeap<Rtv> {
     #[inline]
-    pub fn create_view(
+    pub fn create_render_target_view<U>(
         &mut self,
         index: usize,
         resource: &Resource,
-        desc: Option<&D3D12_RENDER_TARGET_VIEW_DESC>,
+        desc: Option<&RenderTargetViewDesc<U>>,
     ) {
         unsafe {
             self.0.device.CreateRenderTargetView(
                 resource.handle(),
-                desc.map(|d| d as *const _),
+                desc.map(|d| &d.desc as *const _),
                 self.cpu_handle(index).handle(),
             );
         }
@@ -341,16 +1335,16 @@ impl DescriptorHeap<Rtv> {
 
 impl DescriptorHeap<Dsv> {
     #[inline]
-    pub fn create_view(
+    pub fn create_depth_stencil_view<U>(
         &mut self,
         index: usize,
         resource: &Resource,
-        desc: Option<&D3D12_DEPTH_STENCIL_VIEW_DESC>,
+        desc: Option<&DepthStencilViewDesc<U>>,
     ) {
         unsafe {
             self.0.device.CreateDepthStencilView(
                 resource.handle(),
-                desc.map(|d| d as *const _),
+                desc.map(|d| &d.desc as *const _),
                 self.cpu_handle(index).handle(),
             );
         }
@@ -359,11 +1353,11 @@ impl DescriptorHeap<Dsv> {
 
 impl DescriptorHeap<Sampler> {
     #[inline]
-    pub fn create_sampler(&self, index: usize, desc: &D3D12_SAMPLER_DESC) {
+    pub fn create_sampler(&self, index: usize, desc: &SamplerDesc) {
         unsafe {
             self.0
                 .device
-                .CreateSampler(desc, self.cpu_handle(index).handle());
+                .CreateSampler(&desc.0, self.cpu_handle(index).handle());
         }
     }
 }

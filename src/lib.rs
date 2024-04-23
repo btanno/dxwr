@@ -8,9 +8,11 @@ mod descriptor_heap;
 mod device;
 mod fence;
 mod pipeline_state;
+mod raytracing;
 mod resource_barriers;
 mod resources;
 mod root_signature;
+mod state_object;
 mod swap_chain;
 mod utility;
 
@@ -30,22 +32,34 @@ pub type Rect = windows::Win32::Foundation::RECT;
 
 pub use adapter::{enum_adapters, Adapter, AdapterId, AdapterMemoryInfo};
 pub use command_allocator::CommandAllocator;
-pub use command_list::{GraphicsCommandList, IndexBufferView, VertexBufferView};
+pub use command_list::{
+    DiscardRegion, DispatchRaysDesc, GraphicsCommandList, IndexBufferView, VertexBufferView,
+};
 pub use command_queue::CommandQueue;
 pub use debug::*;
 pub use descriptor_heap::{
-    descriptor_heap_type, CpuDescriptorHandle, DescriptorHeap, GpuDescriptorHandle,
+    descriptor_heap_type, ConstantBufferViewDesc, CpuDescriptorHandle, DepthStencilViewDesc,
+    DescriptorHeap, GpuDescriptorHandle, RenderTargetViewDesc, SamplerDesc, ShaderResourceViewDesc,
+    UnorderedAccessViewDesc,
 };
 pub use device::Device;
 pub use fence::{Fence, Signal};
 pub use pipeline_state::*;
+pub use raytracing::{
+    BuildRaytracingAccelerationStructureDesc, BuildRaytracingAccelerationStructureInputs,
+    RaytracingAccelerationStructurePrebuildInfo, RaytracingGeometryDesc, RaytracingInstanceDesc,
+};
 pub use resource_barriers::{AliasingBarrier, TransitionBarrier, UavBarrier};
 pub use resources::{HeapProperties, Resource, ResourceDesc};
 pub use root_signature::{
     root_parameter_type, DescriptorRange, RootParameter, RootSignature, RootSignatureDesc,
     StaticSamplerDesc,
 };
+pub use state_object::{
+    DxilLibraryDesc, DxilSubobjectToExportsAssociation, ExistingCollectionDesc, ExportDesc,
+    GlobalRootSignature, HitGroupDesc, LocalRootSignature, NodeMask, RaytracingPipelineConfig,
+    RaytracingShaderConfig, StateObject, StateObjectConfig, StateObjectProperties,
+    SubobjectToExportsAssociation,
+};
 pub use swap_chain::SwapChain;
-pub use utility::{dxgi_factory, SampleDesc};
-
-use utility::*;
+pub use utility::*;
