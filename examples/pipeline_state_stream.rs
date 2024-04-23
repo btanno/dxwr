@@ -82,7 +82,7 @@ fn main() -> anyhow::Result<()> {
     let render_targets = (0..BUFFER_COUNT)
         .map(|i| -> anyhow::Result<dxwr::Resource> {
             let buffer = swap_chain.get_buffer(i)?;
-            rtv.create_view(i, &buffer, None);
+            rtv.create_render_target_view(i, &buffer, dxwr::RenderTargetViewDesc::none());
             Ok(buffer)
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
@@ -184,6 +184,7 @@ fn main() -> anyhow::Result<()> {
                             .size_in_bytes(std::mem::size_of_val(&indices) as u32)
                             .format(DXGI_FORMAT_R32_UINT),
                     ));
+                    cmd.ia_set_primitive_topology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
                     cmd.draw_indexed_instanced(3, 1, 0, 0, 0);
                     cmd.resource_barrier(&[dxwr::TransitionBarrier::new(
                         &rt,

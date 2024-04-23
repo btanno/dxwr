@@ -76,8 +76,12 @@ impl HeapProperties {
     }
 }
 
-pub struct Buffer;
-pub struct Texture2D;
+pub mod dimension {
+    pub struct Buffer;
+    pub struct Texture1D;
+    pub struct Texture2D;
+    pub struct Texture3D;
+}
 
 #[derive(Clone, Debug)]
 pub struct ResourceDesc<T = ()> {
@@ -87,7 +91,7 @@ pub struct ResourceDesc<T = ()> {
 
 impl ResourceDesc<()> {
     #[inline]
-    pub fn buffer() -> ResourceDesc<Buffer> {
+    pub fn buffer() -> ResourceDesc<dimension::Buffer> {
         ResourceDesc {
             desc: D3D12_RESOURCE_DESC {
                 Dimension: D3D12_RESOURCE_DIMENSION_BUFFER,
@@ -106,7 +110,24 @@ impl ResourceDesc<()> {
     }
 
     #[inline]
-    pub fn texture2d() -> ResourceDesc<Texture2D> {
+    pub fn texture1d() -> ResourceDesc<dimension::Texture1D> {
+        ResourceDesc {
+            desc: D3D12_RESOURCE_DESC {
+                Dimension: D3D12_RESOURCE_DIMENSION_TEXTURE1D,
+                Height: 1,
+                DepthOrArraySize: 1,
+                SampleDesc: DXGI_SAMPLE_DESC {
+                    Count: 1,
+                    Quality: 0,
+                },
+                ..Default::default()
+            },
+            _t: std::marker::PhantomData,
+        }
+    }
+
+    #[inline]
+    pub fn texture2d() -> ResourceDesc<dimension::Texture2D> {
         ResourceDesc {
             desc: D3D12_RESOURCE_DESC {
                 Dimension: D3D12_RESOURCE_DIMENSION_TEXTURE2D,
@@ -130,13 +151,19 @@ impl<T> ResourceDesc<T> {
     }
 
     #[inline]
+    pub fn layout(mut self, layout: D3D12_TEXTURE_LAYOUT) -> Self {
+        self.desc.Layout = layout;
+        self
+    }
+
+    #[inline]
     pub fn flags(mut self, flags: D3D12_RESOURCE_FLAGS) -> Self {
         self.desc.Flags = flags;
         self
     }
 }
 
-impl ResourceDesc<Buffer> {
+impl ResourceDesc<dimension::Buffer> {
     #[inline]
     pub fn width(mut self, width: u64) -> Self {
         self.desc.Width = width;
@@ -144,7 +171,39 @@ impl ResourceDesc<Buffer> {
     }
 }
 
-impl ResourceDesc<Texture2D> {
+impl ResourceDesc<dimension::Texture1D> {
+    #[inline]
+    pub fn width(mut self, width: u64) -> Self {
+        self.desc.Width = width;
+        self
+    }
+
+    #[inline]
+    pub fn array_size(mut self, size: u16) -> Self {
+        self.desc.DepthOrArraySize = size;
+        self
+    }
+
+    #[inline]
+    pub fn mip_levels(mut self, levels: u16) -> Self {
+        self.desc.MipLevels = levels;
+        self
+    }
+
+    #[inline]
+    pub fn format(mut self, format: DXGI_FORMAT) -> Self {
+        self.desc.Format = format;
+        self
+    }
+
+    #[inline]
+    pub fn sample_desc(mut self, desc: SampleDesc) -> Self {
+        self.desc.SampleDesc = desc.0;
+        self
+    }
+}
+
+impl ResourceDesc<dimension::Texture2D> {
     #[inline]
     pub fn width(mut self, width: u64) -> Self {
         self.desc.Width = width;
@@ -180,10 +239,42 @@ impl ResourceDesc<Texture2D> {
         self.desc.SampleDesc = desc.0;
         self
     }
+}
+
+impl ResourceDesc<dimension::Texture3D> {
+    #[inline]
+    pub fn width(mut self, width: u64) -> Self {
+        self.desc.Width = width;
+        self
+    }
 
     #[inline]
-    pub fn layout(mut self, layout: D3D12_TEXTURE_LAYOUT) -> Self {
-        self.desc.Layout = layout;
+    pub fn height(mut self, height: u32) -> Self {
+        self.desc.Height = height;
+        self
+    }
+
+    #[inline]
+    pub fn depth(mut self, depth: u16) -> Self {
+        self.desc.DepthOrArraySize = depth;
+        self
+    }
+
+    #[inline]
+    pub fn mip_levels(mut self, levels: u16) -> Self {
+        self.desc.MipLevels = levels;
+        self
+    }
+
+    #[inline]
+    pub fn format(mut self, format: DXGI_FORMAT) -> Self {
+        self.desc.Format = format;
+        self
+    }
+
+    #[inline]
+    pub fn sample_desc(mut self, desc: SampleDesc) -> Self {
+        self.desc.SampleDesc = desc.0;
         self
     }
 }

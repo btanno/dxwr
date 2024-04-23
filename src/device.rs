@@ -1,3 +1,4 @@
+use super::raytracing::BuildRaytracingAccelerationStructureInputsType;
 use super::*;
 use windows::core::IUnknown;
 use windows::Win32::Foundation::LUID;
@@ -32,6 +33,19 @@ impl Device {
     #[inline]
     pub fn get_adapter_luid(&self) -> LUID {
         unsafe { self.handle.GetAdapterLuid() }
+    }
+
+    #[inline]
+    pub fn get_raytracing_acceleration_structure_prebuild_info(
+        &self,
+        desc: &impl BuildRaytracingAccelerationStructureInputsType,
+    ) -> RaytracingAccelerationStructurePrebuildInfo {
+        unsafe {
+            let mut info = Default::default();
+            self.handle
+                .GetRaytracingAccelerationStructurePrebuildInfo(desc.get(), &mut info);
+            info.into()
+        }
     }
 
     #[inline]

@@ -7,7 +7,7 @@ use windows::Win32::Graphics::Dxgi::Common::*;
 #[derive(Clone, Debug)]
 #[repr(transparent)]
 pub struct ShaderBytecode<'a> {
-    desc: D3D12_SHADER_BYTECODE,
+    pub(crate) desc: D3D12_SHADER_BYTECODE,
     _a: std::marker::PhantomData<&'a ()>,
 }
 
@@ -1189,5 +1189,13 @@ impl PipelineState {
     #[inline]
     pub fn name(&self) -> Option<&str> {
         self.name.as_ref().map(|n| n.as_str())
+    }
+}
+
+impl super::command_list::PipelineStateType for PipelineState {
+    fn call(&self, cmd_list: &ID3D12GraphicsCommandList7) {
+        unsafe {
+            cmd_list.SetPipelineState(&self.handle);
+        }
     }
 }
