@@ -68,21 +68,13 @@ where
 }
 
 #[derive(Clone, Debug)]
-pub struct CommandQueue<T> {
+pub struct CommandQueue<T = ()> {
     handle: ID3D12CommandQueue,
     name: Option<Name>,
     _t: std::marker::PhantomData<T>,
 }
 
-impl<T> CommandQueue<T>
-where
-    T: CommandListType,
-{
-    #[inline]
-    pub fn new(device: &Device, _ty: T) -> Builder<T> {
-        Builder::new(device.handle())
-    }
-
+impl CommandQueue<()> {
     #[inline]
     pub fn new_direct(device: &Device) -> Builder<Direct> {
         Builder::new(device.handle())
@@ -95,6 +87,16 @@ where
 
     #[inline]
     pub fn new_copy(device: &Device) -> Builder<Copy> {
+        Builder::new(device.handle())
+    }
+}
+
+impl<T> CommandQueue<T>
+where
+    T: CommandListType,
+{
+    #[inline]
+    pub fn new(device: &Device, _ty: T) -> Builder<T> {
         Builder::new(device.handle())
     }
 
