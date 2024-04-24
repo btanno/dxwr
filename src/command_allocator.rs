@@ -45,21 +45,13 @@ where
 }
 
 #[derive(Clone, Debug)]
-pub struct CommandAllocator<T> {
+pub struct CommandAllocator<T = ()> {
     handle: ID3D12CommandAllocator,
     name: Option<Name>,
     _t: std::marker::PhantomData<T>,
 }
 
-impl<T> CommandAllocator<T>
-where
-    T: CommandListType,
-{
-    #[inline]
-    pub fn new(device: &Device, _ty: T) -> Builder<T> {
-        Builder::new(device.handle())
-    }
-
+impl CommandAllocator<()> {
     #[inline]
     pub fn new_direct(device: &Device) -> Builder<Direct> {
         Builder::new(device.handle())
@@ -92,6 +84,16 @@ where
 
     #[inline]
     pub fn new_video_decode(device: &Device) -> Builder<VideoDecode> {
+        Builder::new(device.handle())
+    }
+}
+
+impl<T> CommandAllocator<T>
+where
+    T: CommandListType,
+{
+    #[inline]
+    pub fn new(device: &Device, _ty: T) -> Builder<T> {
         Builder::new(device.handle())
     }
 

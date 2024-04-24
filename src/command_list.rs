@@ -900,21 +900,13 @@ where
 }
 
 #[derive(Clone, Debug)]
-pub struct GraphicsCommandList<T> {
+pub struct GraphicsCommandList<T = ()> {
     handle: ID3D12GraphicsCommandList7,
     name: Option<Name>,
     _t: std::marker::PhantomData<T>,
 }
 
-impl<T> GraphicsCommandList<T>
-where
-    T: CommandListType,
-{
-    #[inline]
-    pub fn new(device: &Device, _ty: T) -> Builder<T> {
-        Builder::new(device.handle())
-    }
-
+impl GraphicsCommandList<()> {
     #[inline]
     pub fn new_direct(device: &Device) -> Builder<Direct> {
         Builder::new(device.handle())
@@ -947,6 +939,16 @@ where
 
     #[inline]
     pub fn new_video_decode(device: &Device) -> Builder<VideoDecode> {
+        Builder::new(device.handle())
+    }
+}
+
+impl<T> GraphicsCommandList<T>
+where
+    T: CommandListType,
+{
+    #[inline]
+    pub fn new(device: &Device, _ty: T) -> Builder<T> {
         Builder::new(device.handle())
     }
 
