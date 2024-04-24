@@ -22,7 +22,9 @@ fn main() -> anyhow::Result<()> {
         .title("dxwr triangle")
         .build()?;
     let size = window.inner_size().unwrap();
-    let device = dxwr::Device::new(None, D3D_FEATURE_LEVEL_12_1, None)?;
+    let device = dxwr::Device::new()
+        .min_feature_level(D3D_FEATURE_LEVEL_12_1)
+        .build()?;
     let cmd_queue = dxwr::CommandQueue::new(&device, dxwr::command_list_type::Direct).build()?;
     let swap_chain = dxwr::SwapChain::new()
         .command_queue(&cmd_queue)

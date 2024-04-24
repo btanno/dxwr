@@ -8,7 +8,10 @@ fn main() -> anyhow::Result<()> {
     dxwr::enable_debug_layer()?;
     let adapters = dxwr::enum_adapters()?;
     println!("adapter: {}", adapters[0].description());
-    let device = dxwr::Device::new(Some(&adapters[0]), D3D_FEATURE_LEVEL_12_1, None)?;
+    let device = dxwr::Device::new()
+        .adapter(&adapters[0])
+        .min_feature_level(D3D_FEATURE_LEVEL_12_1)
+        .build()?;
     let mut event_rx = wiard::EventReceiver::new();
     let window = wiard::Window::builder(&event_rx)
         .title("dxwr clear_view")

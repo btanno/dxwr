@@ -1,7 +1,7 @@
-use windows::Win32::Graphics::Direct3D12::*;
-use windows::Win32::System::Diagnostics::Debug::*;
 use windows::core::{PCSTR, PCWSTR};
 use windows::Win32::Foundation::{DBG_PRINTEXCEPTION_C, DBG_PRINTEXCEPTION_WIDE_C};
+use windows::Win32::Graphics::Direct3D12::*;
+use windows::Win32::System::Diagnostics::Debug::*;
 
 #[inline]
 pub fn enable_debug_layer() -> windows::core::Result<()> {
@@ -34,7 +34,7 @@ pub fn output_debug_string_to_stderr() {
                 }
                 EXCEPTION_CONTINUE_EXECUTION
             }
-            _ => EXCEPTION_CONTINUE_SEARCH
+            _ => EXCEPTION_CONTINUE_SEARCH,
         }
     }
 

@@ -71,7 +71,9 @@ fn main() -> anyhow::Result<()> {
     dxwr::output_debug_string_to_stderr();
     dxwr::enable_debug_layer()?;
 
-    let device = dxwr::Device::new(None, D3D_FEATURE_LEVEL_12_1, None)?;
+    let device = dxwr::Device::new()
+        .min_feature_level(D3D_FEATURE_LEVEL_12_1)
+        .build()?;
     let cmd_queue = dxwr::CommandQueue::new(&device, dxwr::command_list_type::Direct)
         .name("direct_cmd_queue")
         .build()?;
