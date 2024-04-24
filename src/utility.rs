@@ -160,4 +160,3 @@ impl GpuVirtualAddressAndStride {
         self
     }
 }
-
