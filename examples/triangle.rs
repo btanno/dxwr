@@ -119,13 +119,11 @@ fn main() -> anyhow::Result<()> {
                 cmd_list.record(&cmd_allocator, |cmd| {
                     cmd.set_pipeline_state(&pipeline);
                     cmd.set_graphics_root_signature(&root_signature);
-                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new(
-                        &rt,
-                        0,
-                        D3D12_RESOURCE_STATE_PRESENT,
-                        D3D12_RESOURCE_STATE_RENDER_TARGET,
-                        D3D12_RESOURCE_BARRIER_FLAG_NONE,
-                    )]);
+                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
+                        .resource(&rt)
+                        .subresource(0)
+                        .state_before(D3D12_RESOURCE_STATE_PRESENT)
+                        .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
                     cmd.rs_set_viewports(&[D3D12_VIEWPORT {
                         Width: size.width as f32,
                         Height: size.height as f32,
@@ -154,13 +152,11 @@ fn main() -> anyhow::Result<()> {
                     ));
                     cmd.ia_set_primitive_topology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
                     cmd.draw_indexed_instanced(3, 1, 0, 0, 0);
-                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new(
-                        &rt,
-                        0,
-                        D3D12_RESOURCE_STATE_RENDER_TARGET,
-                        D3D12_RESOURCE_STATE_PRESENT,
-                        D3D12_RESOURCE_BARRIER_FLAG_NONE,
-                    )]);
+                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
+                        .resource(&rt)
+                        .subresource(0)
+                        .state_before(D3D12_RESOURCE_STATE_RENDER_TARGET)
+                        .state_after(D3D12_RESOURCE_STATE_PRESENT)]);
                 })?;
                 cmd_queue.execute_command_lists(&[&cmd_list]);
                 swap_chain.present(&fence, 0, 0)?.wait()?;

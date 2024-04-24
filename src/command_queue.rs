@@ -11,7 +11,7 @@ pub struct Builder<T> {
 
 impl<T> Builder<T>
 where
-    T: Type,
+    T: CommandListType,
 {
     fn new<U>(device: &U) -> Self
     where
@@ -76,10 +76,25 @@ pub struct CommandQueue<T> {
 
 impl<T> CommandQueue<T>
 where
-    T: Type,
+    T: CommandListType,
 {
     #[inline]
     pub fn new(device: &Device, _ty: T) -> Builder<T> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_direct(device: &Device) -> Builder<Direct> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_compute(device: &Device) -> Builder<Compute> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_copy(device: &Device) -> Builder<Copy> {
         Builder::new(device.handle())
     }
 

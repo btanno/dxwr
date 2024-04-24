@@ -854,7 +854,7 @@ pub struct Builder<T> {
 
 impl<T> Builder<T>
 where
-    T: Type,
+    T: CommandListType,
 {
     fn new<U>(device: &U) -> Self
     where
@@ -908,10 +908,45 @@ pub struct GraphicsCommandList<T> {
 
 impl<T> GraphicsCommandList<T>
 where
-    T: Type,
+    T: CommandListType,
 {
     #[inline]
     pub fn new(device: &Device, _ty: T) -> Builder<T> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_direct(device: &Device) -> Builder<Direct> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_compute(device: &Device) -> Builder<Compute> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_bundle(device: &Device) -> Builder<Bundle> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_copy(device: &Device) -> Builder<Copy> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_video_encode(device: &Device) -> Builder<VideoEncode> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_video_process(device: &Device) -> Builder<VideoProcess> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_video_decode(device: &Device) -> Builder<VideoDecode> {
         Builder::new(device.handle())
     }
 
