@@ -233,10 +233,7 @@ fn main() -> anyhow::Result<()> {
             .dest_acceleration_structure_data(blas.get_gpu_virtual_address())
             .scratch_acceleration_structure_data(scratch.get_gpu_virtual_address());
         cmd.build_raytracing_acceleration_structure(&bottom_level);
-        cmd.resource_barrier(&[dxwr::UavBarrier::new(
-            &blas,
-            D3D12_RESOURCE_BARRIER_FLAG_NONE,
-        )]);
+        cmd.resource_barrier(&[dxwr::UavBarrier::new().resource(&blas)]);
         cmd.build_raytracing_acceleration_structure(&top_level);
     })?;
     cmd_queue.execute_command_lists(&[&cmd_list]);
@@ -417,46 +414,36 @@ fn main() -> anyhow::Result<()> {
             cmd.set_compute_root_shader_resource_view(1, tlas.get_gpu_virtual_address());
             cmd.set_pipeline_state(&state_object);
             cmd.dispatch_rays(&dispatch_rays_desc);
-            cmd.resource_barrier(&[dxwr::TransitionBarrier::new(
-                rt,
-                0,
-                D3D12_RESOURCE_STATE_PRESENT,
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_BARRIER_FLAG_NONE,
-            )]);
+            cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
+                .resource(&rt)
+                .subresource(0)
+                .state_before(D3D12_RESOURCE_STATE_PRESENT)
+                .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
             cmd.clear_render_target_view(rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
             cmd.resource_barrier(&[
-                dxwr::TransitionBarrier::new(
-                    rt,
-                    0,
-                    D3D12_RESOURCE_STATE_RENDER_TARGET,
-                    D3D12_RESOURCE_STATE_COPY_DEST,
-                    D3D12_RESOURCE_BARRIER_FLAG_NONE,
-                ),
-                dxwr::TransitionBarrier::new(
-                    &raytracing_output,
-                    0,
-                    D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                    D3D12_RESOURCE_STATE_COPY_SOURCE,
-                    D3D12_RESOURCE_BARRIER_FLAG_NONE,
-                ),
+                dxwr::TransitionBarrier::new()
+                    .resource(rt)
+                    .subresource(0)
+                    .state_before(D3D12_RESOURCE_STATE_RENDER_TARGET)
+                    .state_after(D3D12_RESOURCE_STATE_COPY_DEST),
+                dxwr::TransitionBarrier::new()
+                    .resource(&raytracing_output)
+                    .subresource(0)
+                    .state_before(D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+                    .state_after(D3D12_RESOURCE_STATE_COPY_SOURCE),
             ]);
             cmd.copy_resource(&raytracing_output, &rt);
             cmd.resource_barrier(&[
-                dxwr::TransitionBarrier::new(
-                    rt,
-                    0,
-                    D3D12_RESOURCE_STATE_COPY_DEST,
-                    D3D12_RESOURCE_STATE_PRESENT,
-                    D3D12_RESOURCE_BARRIER_FLAG_NONE,
-                ),
-                dxwr::TransitionBarrier::new(
-                    &raytracing_output,
-                    0,
-                    D3D12_RESOURCE_STATE_COPY_SOURCE,
-                    D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                    D3D12_RESOURCE_BARRIER_FLAG_NONE,
-                ),
+                dxwr::TransitionBarrier::new()
+                    .resource(rt)
+                    .subresource(0)
+                    .state_before(D3D12_RESOURCE_STATE_COPY_DEST)
+                    .state_after(D3D12_RESOURCE_STATE_PRESENT),
+                dxwr::TransitionBarrier::new()
+                    .resource(&raytracing_output)
+                    .subresource(0)
+                    .state_before(D3D12_RESOURCE_STATE_COPY_SOURCE)
+                    .state_after(D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
             ]);
         })?;
         cmd_queue.execute_command_lists(&[&cmd_list]);

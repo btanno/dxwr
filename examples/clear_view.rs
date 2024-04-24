@@ -53,13 +53,11 @@ fn main() -> anyhow::Result<()> {
                 let rtv_handle = rtv.cpu_handle(index);
                 let rt = &render_targets[index];
                 cmd_list.record(&cmd_allocator, |cmd| {
-                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new(
-                        &rt,
-                        0,
-                        D3D12_RESOURCE_STATE_PRESENT,
-                        D3D12_RESOURCE_STATE_RENDER_TARGET,
-                        D3D12_RESOURCE_BARRIER_FLAG_NONE,
-                    )]);
+                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
+                        .resource(&rt)
+                        .subresource(0)
+                        .state_before(D3D12_RESOURCE_STATE_PRESENT)
+                        .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
                     cmd.rs_set_viewports(&[D3D12_VIEWPORT {
                         Width: size.width as f32,
                         Height: size.height as f32,
@@ -73,13 +71,11 @@ fn main() -> anyhow::Result<()> {
                         bottom: size.height as i32,
                     }]);
                     cmd.clear_render_target_view(rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
-                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new(
-                        &rt,
-                        0,
-                        D3D12_RESOURCE_STATE_RENDER_TARGET,
-                        D3D12_RESOURCE_STATE_PRESENT,
-                        D3D12_RESOURCE_BARRIER_FLAG_NONE,
-                    )]);
+                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
+                        .resource(&rt)
+                        .subresource(0)
+                        .state_before(D3D12_RESOURCE_STATE_RENDER_TARGET)
+                        .state_after(D3D12_RESOURCE_STATE_PRESENT)]);
                 })?;
                 cmd_queue.execute_command_lists(&[&cmd_list]);
                 let signal = swap_chain.present(&fence, 0, 0)?;
