@@ -61,5 +61,5 @@ pub use state_object::{
     RaytracingShaderConfig, StateObject, StateObjectConfig, StateObjectProperties,
     SubobjectToExportsAssociation,
 };
-pub use swap_chain::SwapChain;
+pub use swap_chain::{ResizeBuffers, SwapChain};
 pub use utility::*;

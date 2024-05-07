@@ -151,6 +151,12 @@ impl<T> ResourceDesc<T> {
     }
 
     #[inline]
+    pub fn format(mut self, format: DXGI_FORMAT) -> Self {
+        self.desc.Format = format;
+        self
+    }
+
+    #[inline]
     pub fn layout(mut self, layout: D3D12_TEXTURE_LAYOUT) -> Self {
         self.desc.Layout = layout;
         self
@@ -191,12 +197,6 @@ impl ResourceDesc<dimension::Texture1D> {
     }
 
     #[inline]
-    pub fn format(mut self, format: DXGI_FORMAT) -> Self {
-        self.desc.Format = format;
-        self
-    }
-
-    #[inline]
     pub fn sample_desc(mut self, desc: SampleDesc) -> Self {
         self.desc.SampleDesc = desc.0;
         self
@@ -229,12 +229,6 @@ impl ResourceDesc<dimension::Texture2D> {
     }
 
     #[inline]
-    pub fn format(mut self, format: DXGI_FORMAT) -> Self {
-        self.desc.Format = format;
-        self
-    }
-
-    #[inline]
     pub fn sample_desc(mut self, desc: SampleDesc) -> Self {
         self.desc.SampleDesc = desc.0;
         self
@@ -263,12 +257,6 @@ impl ResourceDesc<dimension::Texture3D> {
     #[inline]
     pub fn mip_levels(mut self, levels: u16) -> Self {
         self.desc.MipLevels = levels;
-        self
-    }
-
-    #[inline]
-    pub fn format(mut self, format: DXGI_FORMAT) -> Self {
-        self.desc.Format = format;
         self
     }
 

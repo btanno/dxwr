@@ -230,12 +230,24 @@ where
     }
 }
 
+#[repr(transparent)]
 pub struct StaticSamplerDesc(D3D12_STATIC_SAMPLER_DESC);
 
 impl StaticSamplerDesc {
     #[inline]
     pub fn new() -> Self {
-        Self(D3D12_STATIC_SAMPLER_DESC::default())
+        Self(D3D12_STATIC_SAMPLER_DESC {
+            Filter: D3D12_FILTER_ANISOTROPIC,
+            AddressU: D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+            AddressV: D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+            AddressW: D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+            MaxAnisotropy: 16,
+            ComparisonFunc: D3D12_COMPARISON_FUNC_LESS_EQUAL,
+            BorderColor: D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK,
+            MaxLOD: f32::MAX,
+            ShaderVisibility: D3D12_SHADER_VISIBILITY_ALL,
+            ..Default::default()
+        })
     }
 
     #[inline]
@@ -273,6 +285,48 @@ impl StaticSamplerDesc {
         self.0.MaxAnisotropy = value;
         self
     }
+
+    #[inline]
+    pub fn comparison_func(mut self, func: D3D12_COMPARISON_FUNC) -> Self {
+        self.0.ComparisonFunc = func;
+        self
+    }
+
+    #[inline]
+    pub fn border_color(mut self, color: D3D12_STATIC_BORDER_COLOR) -> Self {
+        self.0.BorderColor = color;
+        self
+    }
+
+    #[inline]
+    pub fn min_lod(mut self, lod: f32) -> Self {
+        self.0.MinLOD = lod;
+        self
+    }
+
+    #[inline]
+    pub fn max_lod(mut self, lod: f32) -> Self {
+        self.0.MaxLOD = lod;
+        self
+    }
+
+    #[inline]
+    pub fn shader_register(mut self, reg: u32) -> Self {
+        self.0.ShaderRegister = reg;
+        self
+    }
+
+    #[inline]
+    pub fn register_space(mut self, space: u32) -> Self {
+        self.0.RegisterSpace = space;
+        self
+    }
+
+    #[inline]
+    pub fn shader_visibility(mut self, visibility: D3D12_SHADER_VISIBILITY) -> Self {
+        self.0.ShaderVisibility = visibility;
+        self
+    }
 }
 
 #[repr(transparent)]
@@ -299,6 +353,17 @@ impl<'params, 'samplers> RootSignatureDesc<'params, 'samplers> {
     ) -> RootSignatureDesc<'a, 'samplers> {
         self.desc.pParameters = params.as_ptr() as *const D3D12_ROOT_PARAMETER;
         self.desc.NumParameters = params.len() as u32;
+        RootSignatureDesc {
+            desc: self.desc,
+            _params: std::marker::PhantomData,
+            _samplers: std::marker::PhantomData,
+        }
+    }
+
+    #[inline]
+    pub fn static_samplers<'b>(mut self, samplers: &'b [StaticSamplerDesc]) -> RootSignatureDesc<'params, 'b> {
+        self.desc.pStaticSamplers = samplers.as_ptr() as *const D3D12_STATIC_SAMPLER_DESC;
+        self.desc.NumStaticSamplers = samplers.len() as u32;
         RootSignatureDesc {
             desc: self.desc,
             _params: std::marker::PhantomData,
