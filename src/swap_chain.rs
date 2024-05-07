@@ -142,6 +142,15 @@ impl Builder<CommandQueue<command_list_type::Direct>> {
     }
 }
 
+#[derive(Clone, Default)]
+pub struct ResizeBuffers {
+    pub count: Option<u32>,
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    pub format: Option<DXGI_FORMAT>,
+    pub flags: Option<DXGI_SWAP_CHAIN_FLAG>,
+}
+
 #[derive(Clone)]
 pub struct SwapChain {
     handle: IDXGISwapChain4,
@@ -162,6 +171,25 @@ impl SwapChain {
     #[inline]
     pub fn get_current_back_buffer_index(&self) -> usize {
         unsafe { self.handle.GetCurrentBackBufferIndex() as usize }
+    }
+
+    #[inline]
+    pub fn get_last_present_count(&self) -> windows::core::Result<u32> {
+        unsafe { self.handle.GetLastPresentCount() }
+    }
+
+    #[inline]
+    pub fn resize_buffers(&self, params: &ResizeBuffers) -> windows::core::Result<()> {
+        unsafe {
+            self.handle.ResizeBuffers(
+                params.count.unwrap_or(0),
+                params.width.unwrap_or(0),
+                params.height.unwrap_or(0),
+                params.format.unwrap_or(DXGI_FORMAT_UNKNOWN),
+                params.flags.map_or(0, |flag| flag.0 as u32),
+            )?;
+            Ok(())
+        }
     }
 
     #[inline]

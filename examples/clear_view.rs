@@ -58,18 +58,6 @@ fn main() -> anyhow::Result<()> {
                         .subresource(0)
                         .state_before(D3D12_RESOURCE_STATE_PRESENT)
                         .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
-                    cmd.rs_set_viewports(&[D3D12_VIEWPORT {
-                        Width: size.width as f32,
-                        Height: size.height as f32,
-                        MaxDepth: 1.0,
-                        ..Default::default()
-                    }]);
-                    cmd.rs_set_scissor_rects(&[dxwr::Rect {
-                        left: 0,
-                        top: 0,
-                        right: size.width as i32,
-                        bottom: size.height as i32,
-                    }]);
                     cmd.clear_render_target_view(rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
                     cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
                         .resource(&rt)
