@@ -6,6 +6,7 @@ mod command_queue;
 mod debug;
 mod descriptor_heap;
 mod device;
+pub mod dxc;
 mod fence;
 mod pipeline_state;
 mod raytracing;
@@ -15,6 +16,7 @@ mod root_signature;
 mod state_object;
 mod swap_chain;
 mod utility;
+pub mod reflection;
 
 pub mod d3d {
     pub use windows::Win32::Graphics::Direct3D::*;
@@ -43,6 +45,7 @@ pub use descriptor_heap::{
     UnorderedAccessViewDesc,
 };
 pub use device::Device;
+pub use reflection::{ShaderReflection, LibraryReflection, ReflectionType};
 pub use fence::{Fence, Signal};
 pub use pipeline_state::*;
 pub use raytracing::{
