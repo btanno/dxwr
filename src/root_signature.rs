@@ -361,7 +361,10 @@ impl<'params, 'samplers> RootSignatureDesc<'params, 'samplers> {
     }
 
     #[inline]
-    pub fn static_samplers<'b>(mut self, samplers: &'b [StaticSamplerDesc]) -> RootSignatureDesc<'params, 'b> {
+    pub fn static_samplers<'b>(
+        mut self,
+        samplers: &'b [StaticSamplerDesc],
+    ) -> RootSignatureDesc<'params, 'b> {
         self.desc.pStaticSamplers = samplers.as_ptr() as *const D3D12_STATIC_SAMPLER_DESC;
         self.desc.NumStaticSamplers = samplers.len() as u32;
         RootSignatureDesc {

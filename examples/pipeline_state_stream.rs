@@ -157,8 +157,7 @@ fn main() -> anyhow::Result<()> {
                         .resource(&rt)
                         .subresource(0)
                         .state_before(D3D12_RESOURCE_STATE_PRESENT)
-                        .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)
-                    ]);
+                        .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
                     cmd.rs_set_viewports(&[D3D12_VIEWPORT {
                         Width: size.width as f32,
                         Height: size.height as f32,
@@ -191,8 +190,7 @@ fn main() -> anyhow::Result<()> {
                         .resource(&rt)
                         .subresource(0)
                         .state_before(D3D12_RESOURCE_STATE_RENDER_TARGET)
-                        .state_after(D3D12_RESOURCE_STATE_PRESENT)
-                    ]);
+                        .state_after(D3D12_RESOURCE_STATE_PRESENT)]);
                 })?;
                 cmd_queue.execute_command_lists(&[&cmd_list]);
                 swap_chain.present(&fence, 0, 0)?.wait()?;

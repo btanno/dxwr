@@ -145,33 +145,31 @@ impl Type {
     }
 
     fn from_parameter_desc(desc: &D3D12_PARAMETER_DESC) -> windows::core::Result<Self> {
-        unsafe {
-            let ret = match desc.Class {
-                D3D_SVC_SCALAR => Self::svt(desc.Type),
-                D3D_SVC_VECTOR => Self::Vector(Vector {
-                    ty: Box::new(Self::svt(desc.Type)),
-                    len: desc.Columns as usize,
-                }),
-                D3D_SVC_MATRIX_COLUMNS => Self::Matrix(Matrix {
-                    ty: Box::new(Self::svt(desc.Type)),
-                    columns: desc.Columns as usize,
-                    rows: desc.Rows as usize,
-                    major: MatrixMajor::Columns,
-                }),
-                D3D_SVC_MATRIX_ROWS => Self::Matrix(Matrix {
-                    ty: Box::new(Self::svt(desc.Type)),
-                    columns: desc.Columns as usize,
-                    rows: desc.Rows as usize,
-                    major: MatrixMajor::Rows,
-                }),
-                D3D_SVC_STRUCT => Self::Struct(Struct {
-                    name: "".into(),
-                    members: vec![],
-                }),
-                _ => Self::Unsupported,
-            };
-            Ok(ret)
-        }
+        let ret = match desc.Class {
+            D3D_SVC_SCALAR => Self::svt(desc.Type),
+            D3D_SVC_VECTOR => Self::Vector(Vector {
+                ty: Box::new(Self::svt(desc.Type)),
+                len: desc.Columns as usize,
+            }),
+            D3D_SVC_MATRIX_COLUMNS => Self::Matrix(Matrix {
+                ty: Box::new(Self::svt(desc.Type)),
+                columns: desc.Columns as usize,
+                rows: desc.Rows as usize,
+                major: MatrixMajor::Columns,
+            }),
+            D3D_SVC_MATRIX_ROWS => Self::Matrix(Matrix {
+                ty: Box::new(Self::svt(desc.Type)),
+                columns: desc.Columns as usize,
+                rows: desc.Rows as usize,
+                major: MatrixMajor::Rows,
+            }),
+            D3D_SVC_STRUCT => Self::Struct(Struct {
+                name: "".into(),
+                members: vec![],
+            }),
+            _ => Self::Unsupported,
+        };
+        Ok(ret)
     }
 }
 
