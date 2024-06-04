@@ -6,9 +6,11 @@ mod command_queue;
 mod debug;
 mod descriptor_heap;
 mod device;
+pub mod dxc;
 mod fence;
 mod pipeline_state;
 mod raytracing;
+pub mod reflection;
 mod resource_barriers;
 mod resources;
 mod root_signature;
@@ -49,6 +51,7 @@ pub use raytracing::{
     BuildRaytracingAccelerationStructureDesc, BuildRaytracingAccelerationStructureInputs,
     RaytracingAccelerationStructurePrebuildInfo, RaytracingGeometryDesc, RaytracingInstanceDesc,
 };
+pub use reflection::{LibraryReflection, ReflectionType, ShaderReflection};
 pub use resource_barriers::{AliasingBarrier, TransitionBarrier, UavBarrier};
 pub use resources::{HeapProperties, Resource, ResourceDesc};
 pub use root_signature::{
