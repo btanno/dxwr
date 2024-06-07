@@ -9,7 +9,7 @@ mod device;
 pub mod dxc;
 mod fence;
 mod pipeline_state;
-mod raytracing;
+pub mod raytracing;
 pub mod reflection;
 mod resource_barriers;
 mod resources;
@@ -50,6 +50,7 @@ pub use pipeline_state::*;
 pub use raytracing::{
     BuildRaytracingAccelerationStructureDesc, BuildRaytracingAccelerationStructureInputs,
     RaytracingAccelerationStructurePrebuildInfo, RaytracingGeometryDesc, RaytracingInstanceDesc,
+    BuildRaytracingAccelerationStructureInputsType,
 };
 pub use reflection::{LibraryReflection, ReflectionType, ShaderReflection};
 pub use resource_barriers::{AliasingBarrier, TransitionBarrier, UavBarrier};
