@@ -36,6 +36,7 @@ pub use adapter::{enum_adapters, Adapter, AdapterId, AdapterMemoryInfo};
 pub use command_allocator::CommandAllocator;
 pub use command_list::{
     DiscardRegion, DispatchRaysDesc, GraphicsCommandList, IndexBufferView, VertexBufferView,
+    Commands,
 };
 pub use command_queue::CommandQueue;
 pub use debug::*;
