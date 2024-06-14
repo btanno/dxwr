@@ -345,12 +345,14 @@ impl Arguments {
         self.source_name
             .as_ref()
             .inspect(|&source_name| args.push(source_name.clone()));
-        self.target
-            .as_ref()
-            .inspect(|&target| args.push(target.clone()));
-        self.entry_point
-            .as_ref()
-            .inspect(|&entry_point| args.push(entry_point.clone()));
+        self.target.as_ref().inspect(|&target| {
+            args.push("-T".into());
+            args.push(target.clone());
+        });
+        self.entry_point.as_ref().inspect(|&entry_point| {
+            args.push("-E".into());
+            args.push(entry_point.clone())
+        });
         self.include_dirs.iter().for_each(|dir| {
             args.push("-I".into());
             args.push(dir.clone());
