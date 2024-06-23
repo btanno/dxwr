@@ -94,6 +94,16 @@ impl Device {
     }
 
     #[inline]
+    pub fn check_feature<T: Feature>(&self) -> windows::core::Result<T> {
+        T::check(self.handle())
+    }
+
+    #[inline]
+    pub fn request_feature<T: RequestFeature>(&self, feature: T) -> windows::core::Result<T> {
+        T::check(self.handle(), feature)
+    }
+
+    #[inline]
     pub fn handle(&self) -> &ID3D12Device8 {
         &self.handle
     }

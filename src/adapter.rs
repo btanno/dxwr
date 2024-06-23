@@ -107,3 +107,17 @@ pub fn enum_adapters() -> windows::core::Result<Vec<Adapter>> {
     }
     Ok(adapters)
 }
+
+#[inline]
+pub fn enum_warp_adapter() -> windows::core::Result<Adapter> {
+    let factory = dxgi_factory();
+    let handle: IDXGIAdapter4 = unsafe { factory.EnumWarpAdapter()? };
+    let mut desc = Default::default();
+    unsafe {
+        handle.GetDesc3(&mut desc)?;
+    }
+    Ok(Adapter {
+        handle,
+        desc: Arc::new(desc),
+    })
+}
