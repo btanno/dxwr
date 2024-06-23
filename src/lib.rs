@@ -7,6 +7,7 @@ mod debug;
 mod descriptor_heap;
 mod device;
 pub mod dxc;
+pub mod features;
 mod fence;
 mod pipeline_state;
 pub mod raytracing;
@@ -32,11 +33,11 @@ pub mod dxgi {
 
 pub type Rect = windows::Win32::Foundation::RECT;
 
-pub use adapter::{enum_adapters, Adapter, AdapterId, AdapterMemoryInfo};
+pub use adapter::{enum_adapters, enum_warp_adapter, Adapter, AdapterId, AdapterMemoryInfo};
 pub use command_allocator::CommandAllocator;
 pub use command_list::{
-    DiscardRegion, DispatchRaysDesc, GraphicsCommandList, IndexBufferView, VertexBufferView,
-    Commands,
+    Commands, DiscardRegion, DispatchRaysDesc, GraphicsCommandList, IndexBufferView,
+    VertexBufferView,
 };
 pub use command_queue::CommandQueue;
 pub use debug::*;
@@ -46,12 +47,13 @@ pub use descriptor_heap::{
     UnorderedAccessViewDesc,
 };
 pub use device::Device;
+pub use features::{Feature, RequestFeature};
 pub use fence::{Fence, Signal};
 pub use pipeline_state::*;
 pub use raytracing::{
     BuildRaytracingAccelerationStructureDesc, BuildRaytracingAccelerationStructureInputs,
-    RaytracingAccelerationStructurePrebuildInfo, RaytracingGeometryDesc, RaytracingInstanceDesc,
-    BuildRaytracingAccelerationStructureInputsType,
+    BuildRaytracingAccelerationStructureInputsType, RaytracingAccelerationStructurePrebuildInfo,
+    RaytracingGeometryDesc, RaytracingInstanceDesc,
 };
 pub use reflection::{LibraryReflection, ReflectionType, ShaderReflection};
 pub use resource_barriers::{AliasingBarrier, TransitionBarrier, UavBarrier};
