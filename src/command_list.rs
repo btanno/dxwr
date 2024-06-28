@@ -958,7 +958,7 @@ where
         F: FnOnce(Commands<T>) -> R,
     {
         unsafe {
-            allocator.handle().Reset()?;
+            allocator.reset()?;
             self.handle.Reset(allocator.handle(), None)?;
             let ret = f(Commands {
                 cmd_list: &self.handle,

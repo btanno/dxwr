@@ -267,6 +267,38 @@ impl ResourceDesc<dimension::Texture3D> {
     }
 }
 
+#[derive(Clone)]
+pub struct ClearValue(D3D12_CLEAR_VALUE);
+
+impl ClearValue {
+    #[inline]
+    pub fn color(format: DXGI_FORMAT, color: [f32; 4]) -> Self {
+        Self(D3D12_CLEAR_VALUE {
+            Format: format,
+            Anonymous: D3D12_CLEAR_VALUE_0 { Color: color },
+        })
+    }
+
+    #[inline]
+    pub fn depth_stencil(format: DXGI_FORMAT, depth: f32, stencil: u8) -> Self {
+        assert!(
+            format == DXGI_FORMAT_D16_UNORM
+                || format == DXGI_FORMAT_D32_FLOAT
+                || format == DXGI_FORMAT_D24_UNORM_S8_UINT
+                || format == DXGI_FORMAT_D32_FLOAT_S8X24_UINT
+        );
+        Self(D3D12_CLEAR_VALUE {
+            Format: format,
+            Anonymous: D3D12_CLEAR_VALUE_0 {
+                DepthStencil: D3D12_DEPTH_STENCIL_VALUE {
+                    Depth: depth,
+                    Stencil: stencil,
+                },
+            },
+        })
+    }
+}
+
 pub struct MappedData<'a> {
     resource: ID3D12Resource,
     subresource: u32,
@@ -333,7 +365,7 @@ pub struct Builder<HeapProps = (), Desc = ()> {
     heap_flags: D3D12_HEAP_FLAGS,
     desc: Desc,
     init_state: D3D12_RESOURCE_STATES,
-    clear_value: Option<D3D12_CLEAR_VALUE>,
+    clear_value: Option<ClearValue>,
     name: Option<String>,
 }
 
@@ -391,7 +423,7 @@ impl<HeapProps, Desc> Builder<HeapProps, Desc> {
     }
 
     #[inline]
-    pub fn clear_value(mut self, value: D3D12_CLEAR_VALUE) -> Self {
+    pub fn clear_value(mut self, value: ClearValue) -> Self {
         self.clear_value = Some(value);
         self
     }
@@ -414,7 +446,7 @@ impl<'a, 'b, T> Builder<&'a HeapProperties, &'b ResourceDesc<T>> {
                     self.heap_flags,
                     &self.desc.desc,
                     self.init_state,
-                    self.clear_value.as_ref().map(|v| v as *const _),
+                    self.clear_value.as_ref().map(|v| &v.0 as *const _),
                     &mut p,
                 )
                 .map(|_| p.unwrap())?
