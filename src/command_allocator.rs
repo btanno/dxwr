@@ -98,6 +98,11 @@ where
     }
 
     #[inline]
+    pub fn reset(&self) -> windows::core::Result<()> {
+        unsafe { self.handle.Reset() }
+    }
+
+    #[inline]
     pub fn handle(&self) -> &ID3D12CommandAllocator {
         &self.handle
     }
