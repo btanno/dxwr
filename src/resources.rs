@@ -85,7 +85,7 @@ pub mod dimension {
 
 #[derive(Clone, Debug)]
 pub struct ResourceDesc<T = ()> {
-    desc: D3D12_RESOURCE_DESC,
+    pub(crate) desc: D3D12_RESOURCE_DESC,
     _t: std::marker::PhantomData<T>,
 }
 

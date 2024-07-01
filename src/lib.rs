@@ -37,7 +37,7 @@ pub use adapter::{enum_adapters, enum_warp_adapter, Adapter, AdapterId, AdapterM
 pub use command_allocator::CommandAllocator;
 pub use command_list::{
     Commands, DiscardRegion, DispatchRaysDesc, GraphicsCommandList, IndexBufferView,
-    VertexBufferView,
+    TextureCopyLocation, VertexBufferView,
 };
 pub use command_queue::CommandQueue;
 pub use debug::*;
@@ -46,7 +46,7 @@ pub use descriptor_heap::{
     DescriptorHeap, GpuDescriptorHandle, RenderTargetViewDesc, SamplerDesc, ShaderResourceViewDesc,
     UnorderedAccessViewDesc,
 };
-pub use device::Device;
+pub use device::{Device, PlacedSubresourceFootprint, SubresourceFootprint};
 pub use features::{Feature, RequestFeature};
 pub use fence::{Fence, Signal};
 pub use pipeline_state::*;

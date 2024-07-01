@@ -4,6 +4,7 @@ use windows::core::IUnknown;
 use windows::Win32::Foundation::LUID;
 use windows::Win32::Graphics::Direct3D::*;
 use windows::Win32::Graphics::Direct3D12::*;
+use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT;
 
 pub struct Builder<Level = ()> {
     adapter: Option<Adapter>,
@@ -63,6 +64,44 @@ impl Builder<D3D_FEATURE_LEVEL> {
     }
 }
 
+#[derive(Clone, Debug, Default)]
+#[repr(C)]
+pub struct SubresourceFootprint {
+    pub format: DXGI_FORMAT,
+    pub width: u32,
+    pub height: u32,
+    pub depth: u32,
+    pub row_pitch: u32,
+}
+
+#[derive(Clone, Debug, Default)]
+#[repr(C)]
+pub struct PlacedSubresourceFootprint {
+    pub offset: u64,
+    pub footprint: SubresourceFootprint,
+}
+
+impl From<SubresourceFootprint> for D3D12_SUBRESOURCE_FOOTPRINT {
+    fn from(value: SubresourceFootprint) -> Self {
+        Self {
+            Format: value.format,
+            Width: value.width,
+            Height: value.height,
+            Depth: value.depth,
+            RowPitch: value.row_pitch,
+        }
+    }
+}
+
+impl From<PlacedSubresourceFootprint> for D3D12_PLACED_SUBRESOURCE_FOOTPRINT {
+    fn from(value: PlacedSubresourceFootprint) -> Self {
+        Self {
+            Offset: value.offset,
+            Footprint: value.footprint.into(),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Device {
     handle: ID3D12Device8,
@@ -101,6 +140,36 @@ impl Device {
     #[inline]
     pub fn request_feature<T: RequestFeature>(&self, feature: T) -> windows::core::Result<T> {
         T::check(self.handle(), feature)
+    }
+
+    #[inline]
+    pub fn get_copyable_footprints<T>(
+        &self,
+        resource_desc: &ResourceDesc<T>,
+        first_subresource: u32,
+        num_subresource: u32,
+        base_offset: u64,
+        layouts: Option<&mut [PlacedSubresourceFootprint]>,
+        num_rows: Option<&mut u32>,
+        row_size_in_bytes: Option<&mut u64>,
+        total_size: Option<&mut u64>,
+    ) {
+        assert!(layouts
+            .as_ref()
+            .map_or(true, |layouts| layouts.len() >= num_subresource as usize));
+        unsafe {
+            self.handle.GetCopyableFootprints(
+                &resource_desc.desc,
+                first_subresource,
+                num_subresource,
+                base_offset,
+                layouts
+                    .map(|layouts| layouts.as_mut_ptr() as *mut D3D12_PLACED_SUBRESOURCE_FOOTPRINT),
+                num_rows.map(|num_rows| num_rows as *mut u32),
+                row_size_in_bytes.map(|row_size_in_bytes| row_size_in_bytes as *mut u64),
+                total_size.map(|total_size| total_size as *mut u64),
+            );
+        }
     }
 
     #[inline]

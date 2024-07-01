@@ -336,6 +336,44 @@ pub trait PipelineStateType {
     fn call(&self, cmd_list: &ID3D12GraphicsCommandList7);
 }
 
+#[derive(Clone)]
+pub struct TextureCopyLocation(D3D12_TEXTURE_COPY_LOCATION);
+
+impl TextureCopyLocation {
+    #[inline]
+    pub fn placed_footprint(
+        resource: &Resource,
+        placed_footprint: PlacedSubresourceFootprint,
+    ) -> Self {
+        Self(D3D12_TEXTURE_COPY_LOCATION {
+            pResource: std::mem::ManuallyDrop::new(Some(resource.handle().clone())),
+            Type: D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT,
+            Anonymous: D3D12_TEXTURE_COPY_LOCATION_0 {
+                PlacedFootprint: placed_footprint.into(),
+            },
+        })
+    }
+
+    #[inline]
+    pub fn subresource_index(resource: &Resource, index: u32) -> Self {
+        Self(D3D12_TEXTURE_COPY_LOCATION {
+            pResource: std::mem::ManuallyDrop::new(Some(resource.handle().clone())),
+            Type: D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
+            Anonymous: D3D12_TEXTURE_COPY_LOCATION_0 {
+                SubresourceIndex: index,
+            },
+        })
+    }
+}
+
+impl Drop for TextureCopyLocation {
+    fn drop(&mut self) {
+        unsafe {
+            std::mem::ManuallyDrop::drop(&mut self.0.pResource);
+        }
+    }
+}
+
 pub struct Commands<'a, T> {
     cmd_list: &'a ID3D12GraphicsCommandList7,
     _t: std::marker::PhantomData<T>,
@@ -427,20 +465,20 @@ impl<'a, T> Commands<'a, T> {
     #[inline]
     pub fn copy_texture_region(
         &self,
-        src: &D3D12_TEXTURE_COPY_LOCATION,
+        src: &TextureCopyLocation,
         src_box: Option<&D3D12_BOX>,
-        dest: &D3D12_TEXTURE_COPY_LOCATION,
+        dest: &TextureCopyLocation,
         dest_x: u32,
         dest_y: u32,
         dest_z: u32,
     ) {
         unsafe {
             self.cmd_list.CopyTextureRegion(
-                dest,
+                &dest.0,
                 dest_x,
                 dest_y,
                 dest_z,
-                src,
+                &src.0,
                 src_box.map(|s| s as *const _),
             );
         }
