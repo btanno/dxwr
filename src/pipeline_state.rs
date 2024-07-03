@@ -934,6 +934,24 @@ impl<'a> Subobject for Gs<'a> {
     }
 }
 
+impl<'a> Subobject for Ms<'a> {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_MS;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
+impl<'a> Subobject for As<'a> {
+    const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_AS;
+    type Inner = Self;
+
+    fn new(self) -> Self {
+        self
+    }
+}
+
 impl<'decl, 'strides> Subobject for StreamOutputDesc<'decl, 'strides> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_STREAM_OUTPUT;
