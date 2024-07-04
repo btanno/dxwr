@@ -179,6 +179,16 @@ impl SwapChain {
     }
 
     #[inline]
+    pub fn get_frame_latency_waitable_object(&self) -> Handle {
+        Handle::new(unsafe { self.handle.GetFrameLatencyWaitableObject() })
+    }
+
+    #[inline]
+    pub fn set_maximum_frame_latency(&self, max_latency: u32) -> windows::core::Result<()> {
+        unsafe { self.handle.SetMaximumFrameLatency(max_latency) }
+    }
+
+    #[inline]
     pub fn resize_buffers(&self, params: &ResizeBuffers) -> windows::core::Result<()> {
         unsafe {
             self.handle.ResizeBuffers(

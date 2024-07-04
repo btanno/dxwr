@@ -5,7 +5,7 @@ use windows::core::HSTRING;
 use windows::Win32::Foundation::{CloseHandle, HANDLE, WAIT_OBJECT_0};
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::{Common::*, *};
-use windows::Win32::System::Threading::{CreateEventW, WaitForSingleObject};
+use windows::Win32::System::Threading::{CreateEventW, WaitForSingleObject, INFINITE};
 
 pub(crate) struct EventHandle(HANDLE);
 
@@ -158,5 +158,41 @@ impl GpuVirtualAddressAndStride {
     pub fn stride_in_bytes(mut self, stride: u64) -> Self {
         self.0.StrideInBytes = stride;
         self
+    }
+}
+
+pub struct Handle(HANDLE);
+
+impl Handle {
+    #[inline]
+    pub fn new(handle: HANDLE) -> Self {
+        Self(handle)
+    }
+
+    #[inline]
+    pub fn wait(&self) {
+        unsafe {
+            WaitForSingleObject(self.0, INFINITE);
+        }
+    }
+
+    #[inline]
+    pub fn wait_timeout(&self, d: Duration) -> windows::core::Result<bool> {
+        let d = d.as_millis();
+        assert!(d <= u32::MAX as u128);
+        unsafe { Ok(WaitForSingleObject(self.0, d as u32) == WAIT_OBJECT_0) }
+    }
+
+    #[inline]
+    pub fn handle(&self) -> HANDLE {
+        self.0
+    }
+}
+
+impl Drop for Handle {
+    fn drop(&mut self) {
+        unsafe {
+            CloseHandle(self.0).ok();
+        }
     }
 }
