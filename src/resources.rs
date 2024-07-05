@@ -84,6 +84,7 @@ pub mod dimension {
 }
 
 #[derive(Clone, Debug)]
+#[repr(transparent)]
 pub struct ResourceDesc<T = ()> {
     pub(crate) desc: D3D12_RESOURCE_DESC,
     _t: std::marker::PhantomData<T>,
@@ -299,6 +300,32 @@ impl ClearValue {
     }
 }
 
+impl std::fmt::Debug for ClearValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0.Format {
+            DXGI_FORMAT_D16_UNORM
+            | DXGI_FORMAT_D32_FLOAT
+            | DXGI_FORMAT_D24_UNORM_S8_UINT
+            | DXGI_FORMAT_D32_FLOAT_S8X24_UINT => {
+                write!(
+                    f,
+                    "ClearValue {{ Format: {:?}, DepthStencil: {:?} }}",
+                    self.0.Format,
+                    unsafe { self.0.Anonymous.DepthStencil }
+                )
+            }
+            _ => {
+                write!(
+                    f,
+                    "ClearValue {{ Format: {:?}, Color: {:?} }}",
+                    self.0.Format,
+                    unsafe { self.0.Anonymous.Color }
+                )
+            }
+        }
+    }
+}
+
 pub struct MappedData<'a> {
     resource: ID3D12Resource,
     subresource: u32,
@@ -469,6 +496,11 @@ impl Resource {
     }
 
     #[inline]
+    pub fn from_heap(device: &Device) -> placed_resource::Builder {
+        placed_resource::Builder::new(device)
+    }
+
+    #[inline]
     pub(crate) fn from_raw(handle: ID3D12Resource) -> Self {
         Self { handle, name: None }
     }
@@ -502,3 +534,232 @@ impl PartialEq for Resource {
 }
 
 impl Eq for Resource {}
+
+pub mod heap {
+    use super::*;
+
+    #[derive(Debug)]
+    pub struct Builder<Size = (), HeapProps = (), Align = ()> {
+        device: Device,
+        size: Size,
+        heap_properties: HeapProps,
+        alignment: Align,
+        flags: D3D12_HEAP_FLAGS,
+        name: Option<String>,
+    }
+
+    impl Builder<(), (), ()> {
+        pub(super) fn new(device: &Device) -> Self {
+            Self {
+                device: device.clone(),
+                size: (),
+                heap_properties: (),
+                alignment: (),
+                flags: D3D12_HEAP_FLAG_NONE,
+                name: None,
+            }
+        }
+    }
+
+    impl<Size, HeapProps, Align> Builder<Size, HeapProps, Align> {
+        #[inline]
+        pub fn size(self, size: u64) -> Builder<u64, HeapProps, Align> {
+            Builder {
+                device: self.device,
+                size,
+                heap_properties: self.heap_properties,
+                alignment: self.alignment,
+                flags: self.flags,
+                name: self.name,
+            }
+        }
+
+        #[inline]
+        pub fn heap_properties(
+            self,
+            heap_properties: &HeapProperties,
+        ) -> Builder<Size, &HeapProperties, Align> {
+            Builder {
+                device: self.device,
+                size: self.size,
+                heap_properties,
+                alignment: self.alignment,
+                flags: self.flags,
+                name: self.name,
+            }
+        }
+
+        #[inline]
+        pub fn alignment(self, alignment: u64) -> Builder<Size, HeapProps, u64> {
+            Builder {
+                device: self.device,
+                size: self.size,
+                heap_properties: self.heap_properties,
+                alignment,
+                flags: self.flags,
+                name: self.name,
+            }
+        }
+
+        #[inline]
+        pub fn flags(mut self, flags: D3D12_HEAP_FLAGS) -> Builder<Size, HeapProps, Align> {
+            self.flags = flags;
+            self
+        }
+
+        #[inline]
+        pub fn name(mut self, name: impl AsRef<str>) -> Self {
+            self.name = Some(name.as_ref().to_string());
+            self
+        }
+    }
+
+    impl Builder<u64, &HeapProperties, u64> {
+        #[inline]
+        pub fn build(self) -> windows::core::Result<Heap> {
+            let handle = unsafe {
+                let mut p: Option<ID3D12Heap> = None;
+                self.device
+                    .handle()
+                    .CreateHeap(
+                        &D3D12_HEAP_DESC {
+                            SizeInBytes: self.size,
+                            Properties: self.heap_properties.0.clone(),
+                            Alignment: self.alignment,
+                            Flags: self.flags,
+                        },
+                        &mut p,
+                    )
+                    .map(|_| p.unwrap())?
+            };
+            let name = self.name.map(|n| Name::new(&handle, n));
+            Ok(Heap { handle, name })
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Heap {
+    handle: ID3D12Heap,
+    name: Option<Name>,
+}
+
+impl Heap {
+    #[inline]
+    pub fn new(device: &Device) -> heap::Builder {
+        heap::Builder::new(device)
+    }
+
+    #[inline]
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_ref().map(|n| n.as_str())
+    }
+
+    #[inline]
+    pub fn handle(&self) -> &ID3D12Heap {
+        &self.handle
+    }
+}
+
+pub mod placed_resource {
+    use super::*;
+
+    #[derive(Debug)]
+    pub struct Builder<H = (), Rd = ()> {
+        device: Device,
+        heap: H,
+        offset: u64,
+        resource_desc: Rd,
+        init_state: D3D12_RESOURCE_STATES,
+        clear_value: Option<ClearValue>,
+        name: Option<String>,
+    }
+
+    impl Builder<()> {
+        pub(super) fn new(device: &Device) -> Self {
+            Self {
+                device: device.clone(),
+                heap: (),
+                offset: 0,
+                resource_desc: (),
+                init_state: D3D12_RESOURCE_STATE_COMMON,
+                clear_value: None,
+                name: None,
+            }
+        }
+    }
+
+    impl<H, Rd> Builder<H, Rd> {
+        #[inline]
+        pub fn heap(self, heap: &Heap) -> Builder<&Heap, Rd> {
+            Builder {
+                device: self.device,
+                heap,
+                offset: self.offset,
+                resource_desc: self.resource_desc,
+                init_state: self.init_state,
+                clear_value: self.clear_value,
+                name: self.name,
+            }
+        }
+
+        #[inline]
+        pub fn offset(mut self, offset: u64) -> Self {
+            self.offset = offset;
+            self
+        }
+
+        #[inline]
+        pub fn resource_desc(self, resource_desc: &ResourceDesc) -> Builder<H, &ResourceDesc> {
+            Builder {
+                device: self.device,
+                heap: self.heap,
+                offset: self.offset,
+                resource_desc,
+                init_state: self.init_state,
+                clear_value: self.clear_value,
+                name: self.name,
+            }
+        }
+
+        #[inline]
+        pub fn init_state(mut self, state: D3D12_RESOURCE_STATES) -> Self {
+            self.init_state = state;
+            self
+        }
+
+        #[inline]
+        pub fn clear_value(mut self, value: ClearValue) -> Self {
+            self.clear_value = Some(value);
+            self
+        }
+
+        #[inline]
+        pub fn name(mut self, name: impl AsRef<str>) -> Self {
+            self.name = Some(name.as_ref().to_string());
+            self
+        }
+    }
+
+    impl Builder<&Heap, &ResourceDesc> {
+        #[inline]
+        pub fn build(self) -> windows::core::Result<Resource> {
+            let handle = unsafe {
+                let mut p: Option<ID3D12Resource> = None;
+                self.device
+                    .handle()
+                    .CreatePlacedResource(
+                        self.heap.handle(),
+                        self.offset,
+                        &self.resource_desc.desc,
+                        self.init_state,
+                        self.clear_value.as_ref().map(|c| &c.0 as *const _),
+                        &mut p,
+                    )
+                    .map(|_| p.unwrap())?
+            };
+            let name = self.name.map(|n| Name::new(&handle, n));
+            Ok(Resource { handle, name })
+        }
+    }
+}

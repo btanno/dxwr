@@ -1157,11 +1157,6 @@ pub struct DescriptorHeap<T = ()>(Arc<Field<T>>);
 
 impl DescriptorHeap<()> {
     #[inline]
-    pub fn new<T: Type>(device: &Device, _ty: T) -> Builder<T> {
-        Builder::new(device.handle())
-    }
-
-    #[inline]
     pub fn new_cbv_srv_uav(device: &Device) -> Builder<CbvSrvUav> {
         Builder::new(device.handle())
     }
@@ -1267,6 +1262,11 @@ impl<T> Eq for DescriptorHeap<T> {}
 
 impl DescriptorHeap<CbvSrvUav> {
     #[inline]
+    pub fn new(device: &Device) -> Builder<CbvSrvUav> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
     pub fn create_constant_buffer_view(
         &mut self,
         index: usize,
@@ -1317,6 +1317,11 @@ impl DescriptorHeap<CbvSrvUav> {
 
 impl DescriptorHeap<Rtv> {
     #[inline]
+    pub fn new(device: &Device) -> Builder<Rtv> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
     pub fn create_render_target_view<U>(
         &mut self,
         index: usize,
@@ -1334,6 +1339,11 @@ impl DescriptorHeap<Rtv> {
 }
 
 impl DescriptorHeap<Dsv> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<Dsv> {
+        Builder::new(device.handle())
+    }
+
     #[inline]
     pub fn create_depth_stencil_view<U>(
         &mut self,
@@ -1353,6 +1363,11 @@ impl DescriptorHeap<Dsv> {
 
 impl DescriptorHeap<Sampler> {
     #[inline]
+    pub fn new(device: &Device) -> Builder<Sampler> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
     pub fn create_sampler(&self, index: usize, desc: &SamplerDesc) {
         unsafe {
             self.0
@@ -1361,3 +1376,18 @@ impl DescriptorHeap<Sampler> {
         }
     }
 }
+
+pub type RtvDescriptorHeap = DescriptorHeap<descriptor_heap_type::Rtv>;
+pub type DsvDescriptorHeap = DescriptorHeap<descriptor_heap_type::Dsv>;
+pub type CbvSrvUavDescriptorHeap = DescriptorHeap<descriptor_heap_type::CbvSrvUav>;
+pub type SamplerDescriptorHeap = DescriptorHeap<descriptor_heap_type::Sampler>;
+
+pub type RtvCpuDescriptorHandle = CpuDescriptorHandle<descriptor_heap_type::Rtv>;
+pub type DsvCpuDescriptorHandle = CpuDescriptorHandle<descriptor_heap_type::Dsv>;
+pub type CbvSrvUavCpuDescriptorHandle = CpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>;
+pub type SamplerCpuDescriptorHandle = CpuDescriptorHandle<descriptor_heap_type::Sampler>;
+
+pub type RtvGpuDescriptorHandle = GpuDescriptorHandle<descriptor_heap_type::Rtv>;
+pub type DsvGpuDescriptorHandle = GpuDescriptorHandle<descriptor_heap_type::Dsv>;
+pub type CbvSrvUavGpuDescriptorHandle = GpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>;
+pub type SamplerGpuDescriptorHandle = GpuDescriptorHandle<descriptor_heap_type::Sampler>;

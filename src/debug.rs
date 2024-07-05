@@ -69,3 +69,73 @@ pub fn output_debug_string_to_stderr() {
         });
     });
 }
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+pub enum DredEnablement {
+    SystemControlled,
+    ForceOn,
+    ForceOff,
+}
+
+impl Default for DredEnablement {
+    #[inline]
+    fn default() -> Self {
+        Self::SystemControlled
+    }
+}
+
+impl From<DredEnablement> for D3D12_DRED_ENABLEMENT {
+    #[inline]
+    fn from(value: DredEnablement) -> Self {
+        match value {
+            DredEnablement::SystemControlled => D3D12_DRED_ENABLEMENT_SYSTEM_CONTROLLED,
+            DredEnablement::ForceOn => D3D12_DRED_ENABLEMENT_FORCED_ON,
+            DredEnablement::ForceOff => D3D12_DRED_ENABLEMENT_FORCED_OFF,
+        }
+    }
+}
+
+pub struct DeviceRemovedExtendedDataSettings(ID3D12DeviceRemovedExtendedDataSettings1);
+
+impl DeviceRemovedExtendedDataSettings {
+    #[inline]
+    pub fn new() -> windows::core::Result<Self> {
+        let settings: ID3D12DeviceRemovedExtendedDataSettings1 = unsafe {
+            let mut p: Option<_> = None;
+            D3D12GetDebugInterface(&mut p).map(|_| p.unwrap())?
+        };
+        Ok(Self(settings))
+    }
+
+    #[inline]
+    pub fn set_auto_breadcrumbs_enablement(self, enablement: DredEnablement) -> Self {
+        unsafe {
+            self.0.SetAutoBreadcrumbsEnablement(enablement.into());
+        }
+        self
+    }
+
+    #[inline]
+    pub fn set_page_fault_enablement(self, enablement: DredEnablement) -> Self {
+        unsafe {
+            self.0.SetPageFaultEnablement(enablement.into());
+        }
+        self
+    }
+
+    #[inline]
+    pub fn set_watson_dump_enablement(self, enablement: DredEnablement) -> Self {
+        unsafe {
+            self.0.SetWatsonDumpEnablement(enablement.into());
+        }
+        self
+    }
+
+    #[inline]
+    pub fn set_breadcrumb_context_enablement(self, enablement: DredEnablement) -> Self {
+        unsafe {
+            self.0.SetBreadcrumbContextEnablement(enablement.into());
+        }
+        self
+    }
+}

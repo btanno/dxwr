@@ -74,12 +74,11 @@ fn main() -> anyhow::Result<()> {
     let device = dxwr::Device::new()
         .min_feature_level(D3D_FEATURE_LEVEL_12_1)
         .build()?;
-    let cmd_queue = dxwr::CommandQueue::new(&device, dxwr::command_list_type::Direct)
+    let cmd_queue = dxwr::DirectCommandQueue::new(&device)
         .name("direct_cmd_queue")
         .build()?;
-    let cmd_allocator =
-        dxwr::CommandAllocator::new(&device, dxwr::command_list_type::Direct).build()?;
-    let cmd_list = dxwr::GraphicsCommandList::new(&device, dxwr::command_list_type::Direct)
+    let cmd_allocator = dxwr::DirectCommandAllocator::new(&device).build()?;
+    let cmd_list = dxwr::DirectGraphicsCommandList::new(&device)
         .name("direct_cmd_list")
         .build()?;
     let fence = dxwr::Fence::new(&device).build()?;
@@ -238,11 +237,10 @@ fn main() -> anyhow::Result<()> {
     })?;
     cmd_queue.execute_command_lists(&[&cmd_list]);
     cmd_queue.signal(&fence)?.wait()?;
-    let mut descriptor_heap =
-        dxwr::DescriptorHeap::new(&device, dxwr::descriptor_heap_type::CbvSrvUav)
-            .len(1)
-            .flags(D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE)
-            .build()?;
+    let mut descriptor_heap = dxwr::CbvSrvUavDescriptorHeap::new(&device)
+        .len(1)
+        .flags(D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE)
+        .build()?;
 
     let mut event_rx = wiard::EventReceiver::new();
     let window = wiard::Window::builder(&mut event_rx)
@@ -258,9 +256,7 @@ fn main() -> anyhow::Result<()> {
         .buffer_usage(DXGI_USAGE_RENDER_TARGET_OUTPUT)
         .swap_effect(DXGI_SWAP_EFFECT_FLIP_DISCARD)
         .build_for_hwnd(window.raw_handle())?;
-    let mut rtv_heap = dxwr::DescriptorHeap::new(&device, dxwr::descriptor_heap_type::Rtv)
-        .len(2)
-        .build()?;
+    let mut rtv_heap = dxwr::RtvDescriptorHeap::new(&device).len(2).build()?;
     let render_targets = (0..2)
         .map(|i| -> anyhow::Result<dxwr::Resource> {
             let buffer = swap_chain.get_buffer(i)?;

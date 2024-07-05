@@ -25,7 +25,7 @@ fn main() -> anyhow::Result<()> {
     let device = dxwr::Device::new()
         .min_feature_level(D3D_FEATURE_LEVEL_12_1)
         .build()?;
-    let cmd_queue = dxwr::CommandQueue::new(&device, dxwr::command_list_type::Direct).build()?;
+    let cmd_queue = dxwr::DirectCommandQueue::new(&device).build()?;
     let swap_chain = dxwr::SwapChain::new()
         .command_queue(&cmd_queue)
         .width(size.width)
@@ -35,7 +35,7 @@ fn main() -> anyhow::Result<()> {
         .buffer_usage(DXGI_USAGE_RENDER_TARGET_OUTPUT)
         .swap_effect(DXGI_SWAP_EFFECT_FLIP_DISCARD)
         .build_for_hwnd(window.raw_handle())?;
-    let mut rtv = dxwr::DescriptorHeap::new(&device, dxwr::descriptor_heap_type::Rtv)
+    let mut rtv = dxwr::RtvDescriptorHeap::new(&device)
         .len(BUFFER_COUNT)
         .build()?;
     let render_targets = (0..BUFFER_COUNT)
@@ -46,10 +46,8 @@ fn main() -> anyhow::Result<()> {
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
     let fence = dxwr::Fence::new(&device).build()?;
-    let cmd_allocator =
-        dxwr::CommandAllocator::new(&device, dxwr::command_list_type::Direct).build()?;
-    let cmd_list =
-        dxwr::GraphicsCommandList::new(&device, dxwr::command_list_type::Direct).build()?;
+    let cmd_allocator = dxwr::DirectCommandAllocator::new(&device).build()?;
+    let cmd_list = dxwr::DirectGraphicsCommandList::new(&device).build()?;
     let root_signature = dxwr::RootSignature::new(&device).build_from_desc(
         &dxwr::RootSignatureDesc::new()
             .flags(D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),

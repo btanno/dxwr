@@ -102,6 +102,12 @@ impl From<PlacedSubresourceFootprint> for D3D12_PLACED_SUBRESOURCE_FOOTPRINT {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct ResourceAllocationInfo {
+    pub size_in_bytes: u64,
+    pub alignment: u64,
+}
+
 #[derive(Clone, Debug)]
 pub struct Device {
     handle: ID3D12Device8,
@@ -169,6 +175,25 @@ impl Device {
                 row_size_in_bytes.map(|row_size_in_bytes| row_size_in_bytes as *mut u64),
                 total_size.map(|total_size| total_size as *mut u64),
             );
+        }
+    }
+
+    #[inline]
+    pub fn get_resource_allocation_info(
+        &self,
+        visible_mask: u32,
+        descs: &[ResourceDesc],
+    ) -> ResourceAllocationInfo {
+        unsafe {
+            let descs = std::slice::from_raw_parts(
+                descs.as_ptr() as *const D3D12_RESOURCE_DESC,
+                descs.len(),
+            );
+            let info = self.handle.GetResourceAllocationInfo(visible_mask, descs);
+            ResourceAllocationInfo {
+                size_in_bytes: info.SizeInBytes,
+                alignment: info.Alignment,
+            }
         }
     }
 
