@@ -106,18 +106,18 @@ pub mod root_parameter_type {
 }
 
 #[repr(transparent)]
-pub struct RootParameter<'a, T> {
+pub struct RootParameter<'a, T = ()> {
     param: D3D12_ROOT_PARAMETER,
     _t: std::marker::PhantomData<&'a T>,
 }
 
-impl<'a, T> RootParameter<'a, T>
-where
-    T: RootParameterType,
-{
+impl<'a> RootParameter<'a, ()> {
     #[inline]
-    pub fn new(_t: T) -> Self {
-        Self {
+    pub fn new<T>(_t: T) -> RootParameter<'a, T>
+    where
+        T: RootParameterType,
+    {
+        RootParameter {
             param: D3D12_ROOT_PARAMETER {
                 ParameterType: T::VALUE,
                 ShaderVisibility: D3D12_SHADER_VISIBILITY_ALL,
@@ -127,6 +127,36 @@ where
         }
     }
 
+    #[inline]
+    pub fn cbv() -> RootParameter<'a, root_parameter_type::Cbv> {
+        Self::new(root_parameter_type::Cbv)
+    }
+
+    #[inline]
+    pub fn srv() -> RootParameter<'a, root_parameter_type::Srv> {
+        Self::new(root_parameter_type::Srv)
+    }
+
+    #[inline]
+    pub fn uav() -> RootParameter<'a, root_parameter_type::Uav> {
+        Self::new(root_parameter_type::Uav)
+    }
+
+    #[inline]
+    pub fn constants_32bit() -> RootParameter<'a, root_parameter_type::Constants32bit> {
+        Self::new(root_parameter_type::Constants32bit)
+    }
+
+    #[inline]
+    pub fn descriptor_table() -> RootParameter<'a, root_parameter_type::DescriptorTable> {
+        Self::new(root_parameter_type::DescriptorTable)
+    }
+}
+
+impl<'a, T> RootParameter<'a, T>
+where
+    T: RootParameterType,
+{
     #[inline]
     pub fn shader_visibility(mut self, visibility: D3D12_SHADER_VISIBILITY) -> Self {
         self.param.ShaderVisibility = visibility;

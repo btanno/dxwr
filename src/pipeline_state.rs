@@ -872,6 +872,13 @@ impl<'a> ViewInstancingDesc<'a> {
     }
 }
 
+impl Default for SampleMask {
+    #[inline]
+    fn default() -> Self {
+        Self(u32::MAX)
+    }
+}
+
 pub trait Subobject {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE;
     type Inner;

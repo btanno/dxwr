@@ -93,11 +93,6 @@ where
     T: CommandListType,
 {
     #[inline]
-    pub fn new(device: &Device, _ty: T) -> Builder<T> {
-        Builder::new(device.handle())
-    }
-
-    #[inline]
     pub fn reset(&self) -> windows::core::Result<()> {
         unsafe { self.handle.Reset() }
     }
@@ -112,3 +107,60 @@ where
         self.name.as_ref().map(|n| n.as_str())
     }
 }
+
+impl CommandAllocator<command_list_type::Direct> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Direct> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandAllocator<command_list_type::Compute> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Compute> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandAllocator<command_list_type::Copy> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Copy> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandAllocator<command_list_type::Bundle> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Bundle> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandAllocator<command_list_type::VideoDecode> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::VideoDecode> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandAllocator<command_list_type::VideoEncode> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::VideoEncode> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandAllocator<command_list_type::VideoProcess> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::VideoProcess> {
+        Builder::new(device.handle())
+    }
+}
+
+pub type DirectCommandAllocator = CommandAllocator<command_list_type::Direct>;
+pub type ComputeCommandAllocator = CommandAllocator<command_list_type::Compute>;
+pub type CopyCommandAllocator = CommandAllocator<command_list_type::Copy>;
+pub type BundleCommandAllocator = CommandAllocator<command_list_type::Bundle>;
+pub type VideoDecodeCommandAllocator = CommandAllocator<command_list_type::VideoDecode>;
+pub type VideoEncodeCommandAllocator = CommandAllocator<command_list_type::VideoEncode>;
+pub type VideoProcessCommandAllocator = CommandAllocator<command_list_type::VideoProcess>;

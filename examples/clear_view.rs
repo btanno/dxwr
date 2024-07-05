@@ -18,7 +18,7 @@ fn main() -> anyhow::Result<()> {
         .inner_size(wiard::LogicalSize::new(1024, 768))
         .build()?;
     let size = window.inner_size().unwrap();
-    let cmd_queue = dxwr::CommandQueue::new(&device, dxwr::command_list_type::Direct).build()?;
+    let cmd_queue = dxwr::DirectCommandQueue::new(&device).build()?;
     let swap_chain = dxwr::SwapChain::new()
         .command_queue(&cmd_queue)
         .width(size.width)
@@ -39,10 +39,8 @@ fn main() -> anyhow::Result<()> {
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
     let fence = dxwr::Fence::new(&device).build()?;
-    let cmd_allocator =
-        dxwr::CommandAllocator::new(&device, dxwr::command_list_type::Direct).build()?;
-    let cmd_list =
-        dxwr::GraphicsCommandList::new(&device, dxwr::command_list_type::Direct).build()?;
+    let cmd_allocator = dxwr::DirectCommandAllocator::new(&device).build()?;
+    let cmd_list = dxwr::DirectGraphicsCommandList::new(&device).build()?;
     loop {
         let Some((event, _)) = event_rx.recv() else {
             break;

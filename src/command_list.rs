@@ -986,11 +986,6 @@ where
     T: CommandListType,
 {
     #[inline]
-    pub fn new(device: &Device, _ty: T) -> Builder<T> {
-        Builder::new(device.handle())
-    }
-
-    #[inline]
     pub fn record<F, R>(&self, allocator: &CommandAllocator<T>, f: F) -> windows::core::Result<R>
     where
         F: FnOnce(Commands<T>) -> R,
@@ -1017,3 +1012,68 @@ where
         self.name.as_ref().map(|n| n.as_str())
     }
 }
+
+impl GraphicsCommandList<command_list_type::Direct> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Direct> {
+        Builder::new(device.handle())
+    }
+}
+
+impl GraphicsCommandList<command_list_type::Compute> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Compute> {
+        Builder::new(device.handle())
+    }
+}
+
+impl GraphicsCommandList<command_list_type::Bundle> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Bundle> {
+        Builder::new(device.handle())
+    }
+}
+
+impl GraphicsCommandList<command_list_type::Copy> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Copy> {
+        Builder::new(device.handle())
+    }
+}
+
+impl GraphicsCommandList<command_list_type::VideoDecode> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::VideoDecode> {
+        Builder::new(device.handle())
+    }
+}
+
+impl GraphicsCommandList<command_list_type::VideoEncode> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::VideoEncode> {
+        Builder::new(device.handle())
+    }
+}
+
+impl GraphicsCommandList<command_list_type::VideoProcess> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::VideoProcess> {
+        Builder::new(device.handle())
+    }
+}
+
+pub type DirectGraphicsCommandList = GraphicsCommandList<command_list_type::Direct>;
+pub type ComputeGraphicsCommandList = GraphicsCommandList<command_list_type::Compute>;
+pub type BundleGraphicsCommandList = GraphicsCommandList<command_list_type::Bundle>;
+pub type CopyGraphicsCommandList = GraphicsCommandList<command_list_type::Copy>;
+pub type VideoDecodeGraphicsCommandList = GraphicsCommandList<command_list_type::VideoDecode>;
+pub type VideoEncodeGraphicsCommandList = GraphicsCommandList<command_list_type::VideoEncode>;
+pub type VideoProcessGraphicsCommandList = GraphicsCommandList<command_list_type::VideoProcess>;
+
+pub type DirectCommands<'a> = Commands<'a, command_list_type::Direct>;
+pub type ComputeCommands<'a> = Commands<'a, command_list::Compute>;
+pub type BundleCommands<'a> = Commands<'a, command_list_type::Bundle>;
+pub type CopyCommands<'a> = Commands<'a, command_list_type::Copy>;
+pub type VideoDecodeCommands<'a> = Commands<'a, command_list_type::VideoDecode>;
+pub type VideoEncodeCommands<'a> = Commands<'a, command_list_type::VideoEncode>;
+pub type VideoProcessCommands<'a> = Commands<'a, command_list_type::VideoProcess>;

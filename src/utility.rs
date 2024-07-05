@@ -196,3 +196,13 @@ impl Drop for Handle {
         }
     }
 }
+
+#[inline]
+pub fn align_size(size: u64, align: u64) -> u64 {
+    size + (align - 1) & !(align - 1)
+}
+
+#[inline]
+pub fn align_size_for_constant_buffer(size: u64) -> u64 {
+    align_size(size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT as u64)
+}

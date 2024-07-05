@@ -34,16 +34,31 @@ pub mod dxgi {
 pub type Rect = windows::Win32::Foundation::RECT;
 
 pub use adapter::{enum_adapters, enum_warp_adapter, Adapter, AdapterId, AdapterMemoryInfo};
-pub use command_allocator::CommandAllocator;
-pub use command_list::{
-    Commands, DiscardRegion, DispatchRaysDesc, GraphicsCommandList, IndexBufferView,
-    TextureCopyLocation, VertexBufferView,
+pub use command_allocator::{
+    BundleCommandAllocator, CommandAllocator, ComputeCommandAllocator, CopyCommandAllocator,
+    DirectCommandAllocator, VideoDecodeCommandAllocator, VideoEncodeCommandAllocator,
+    VideoProcessCommandAllocator,
 };
-pub use command_queue::CommandQueue;
+pub use command_list::{
+    BundleCommands, BundleGraphicsCommandList, Commands, ComputeCommands,
+    ComputeGraphicsCommandList, CopyCommands, CopyGraphicsCommandList, DirectCommands,
+    DirectGraphicsCommandList, DiscardRegion, DispatchRaysDesc, GraphicsCommandList,
+    IndexBufferView, TextureCopyLocation, VertexBufferView, VideoDecodeCommands,
+    VideoDecodeGraphicsCommandList, VideoEncodeCommands, VideoEncodeGraphicsCommandList,
+    VideoProcessCommands, VideoProcessGraphicsCommandList,
+};
+pub use command_queue::{
+    CommandQueue, ComputeCommandQueue, CopyCommandQueue, DirectCommandQueue,
+    VideoDecodeCommandQueue, VideoEncodeCommandQueue, VideoProcessCommandQueue,
+};
 pub use debug::*;
 pub use descriptor_heap::{
-    descriptor_heap_type, ConstantBufferViewDesc, CpuDescriptorHandle, DepthStencilViewDesc,
-    DescriptorHeap, GpuDescriptorHandle, RenderTargetViewDesc, SamplerDesc, ShaderResourceViewDesc,
+    descriptor_heap_type, CbvSrvUavCpuDescriptorHandle, CbvSrvUavDescriptorHeap,
+    CbvSrvUavGpuDescriptorHandle, ConstantBufferViewDesc, CpuDescriptorHandle,
+    DepthStencilViewDesc, DescriptorHeap, DsvCpuDescriptorHandle, DsvDescriptorHeap,
+    DsvGpuDescriptorHandle, GpuDescriptorHandle, RenderTargetViewDesc, RtvCpuDescriptorHandle,
+    RtvDescriptorHeap, RtvGpuDescriptorHandle, SamplerCpuDescriptorHandle, SamplerDesc,
+    SamplerDescriptorHeap, SamplerGpuDescriptorHandle, ShaderResourceViewDesc,
     UnorderedAccessViewDesc,
 };
 pub use device::{Device, PlacedSubresourceFootprint, SubresourceFootprint};
@@ -57,7 +72,7 @@ pub use raytracing::{
 };
 pub use reflection::{LibraryReflection, ReflectionType, ShaderReflection};
 pub use resource_barriers::{AliasingBarrier, TransitionBarrier, UavBarrier};
-pub use resources::{ClearValue, HeapProperties, Resource, ResourceDesc};
+pub use resources::{ClearValue, Heap, HeapProperties, Resource, ResourceDesc};
 pub use root_signature::{
     root_parameter_type, DescriptorRange, RootParameter, RootSignature, RootSignatureDesc,
     StaticSamplerDesc,

@@ -96,11 +96,6 @@ where
     T: CommandListType,
 {
     #[inline]
-    pub fn new(device: &Device, _ty: T) -> Builder<T> {
-        Builder::new(device.handle())
-    }
-
-    #[inline]
     pub fn execute_command_lists(&self, cmd_lists: &[&GraphicsCommandList<T>]) {
         let cmd_lists = cmd_lists
             .iter()
@@ -136,3 +131,52 @@ where
         self.name.as_ref().map(|n| n.as_str())
     }
 }
+
+impl CommandQueue<command_list_type::Direct> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Direct> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandQueue<command_list_type::Compute> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Compute> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandQueue<command_list_type::Copy> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::Copy> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandQueue<command_list_type::VideoDecode> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::VideoDecode> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandQueue<command_list_type::VideoEncode> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::VideoEncode> {
+        Builder::new(device.handle())
+    }
+}
+
+impl CommandQueue<command_list_type::VideoProcess> {
+    #[inline]
+    pub fn new(device: &Device) -> Builder<command_list_type::VideoProcess> {
+        Builder::new(device.handle())
+    }
+}
+
+pub type DirectCommandQueue = CommandQueue<command_list_type::Direct>;
+pub type ComputeCommandQueue = CommandQueue<command_list_type::Compute>;
+pub type CopyCommandQueue = CommandQueue<command_list_type::Copy>;
+pub type VideoDecodeCommandQueue = CommandQueue<command_list_type::VideoDecode>;
+pub type VideoEncodeCommandQueue = CommandQueue<command_list_type::VideoEncode>;
+pub type VideoProcessCommandQueue = CommandQueue<command_list_type::VideoProcess>;
