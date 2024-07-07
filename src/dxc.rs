@@ -133,7 +133,7 @@ impl CompileResult {
         let blob = self.get_output::<IDxcBlobUtf8>(kind)?;
         unsafe {
             if blob.GetBufferPointer().is_null() {
-                return Err(E_POINTER.into());
+                return Ok(String::new());
             }
             Ok(String::from_utf8_lossy(std::slice::from_raw_parts(
                 blob.GetBufferPointer() as *const u8,
