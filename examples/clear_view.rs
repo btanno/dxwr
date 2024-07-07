@@ -64,7 +64,7 @@ fn main() -> anyhow::Result<()> {
                         .state_after(D3D12_RESOURCE_STATE_PRESENT)]);
                 })?;
                 cmd_queue.execute_command_lists(&[&cmd_list]);
-                let signal = swap_chain.present(&fence, 0, 0)?;
+                let signal = swap_chain.present(&fence, 0, DXGI_PRESENT(0))?;
                 signal.wait()?;
             }
             _ => {}

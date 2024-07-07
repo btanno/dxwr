@@ -92,8 +92,7 @@ pub fn enum_adapters() -> windows::core::Result<Vec<Adapter>> {
             match ret {
                 Ok(adapter) => {
                     let handle = adapter.cast::<IDXGIAdapter4>().unwrap();
-                    let mut desc = Default::default();
-                    handle.GetDesc3(&mut desc)?;
+                    let desc = handle.GetDesc3()?;
                     adapters.push(Adapter {
                         handle,
                         desc: Arc::new(desc),
@@ -112,10 +111,7 @@ pub fn enum_adapters() -> windows::core::Result<Vec<Adapter>> {
 pub fn enum_warp_adapter() -> windows::core::Result<Adapter> {
     let factory = dxgi_factory();
     let handle: IDXGIAdapter4 = unsafe { factory.EnumWarpAdapter()? };
-    let mut desc = Default::default();
-    unsafe {
-        handle.GetDesc3(&mut desc)?;
-    }
+    let desc = unsafe { handle.GetDesc3()? };
     Ok(Adapter {
         handle,
         desc: Arc::new(desc),

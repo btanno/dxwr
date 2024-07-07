@@ -1,6 +1,7 @@
 use super::*;
 use std::path::Path;
 use windows::core::{Interface, HSTRING, PCWSTR};
+use windows::Win32::Foundation::{E_ABORT, E_POINTER};
 
 pub use windows::Win32::Graphics::Direct3D::Dxc::*;
 
@@ -103,6 +104,9 @@ impl CompileResult {
     where
         T: windows::core::Interface,
     {
+        if !self.has_output(kind) {
+            return Err(E_ABORT.into());
+        }
         let output = unsafe {
             let mut p: Option<T> = None;
             self.0
@@ -113,20 +117,30 @@ impl CompileResult {
     }
 
     pub(crate) fn get_blob(&self, kind: DXC_OUT_KIND) -> windows::core::Result<RefBlob> {
-        self.get_output::<IDxcBlob>(kind).map(|blob| RefBlob {
+        let blob = self.get_output::<IDxcBlob>(kind)?;
+        unsafe {
+            if blob.GetBufferPointer().is_null() {
+                return Err(E_POINTER.into());
+            }
+        }
+        Ok(RefBlob {
             blob,
             _a: std::marker::PhantomData,
         })
     }
 
     fn get_string(&self, kind: DXC_OUT_KIND) -> windows::core::Result<String> {
-        self.get_output::<IDxcBlobUtf8>(kind).map(|blob| unsafe {
-            String::from_utf8_lossy(std::slice::from_raw_parts(
+        let blob = self.get_output::<IDxcBlobUtf8>(kind)?;
+        unsafe {
+            if blob.GetBufferPointer().is_null() {
+                return Err(E_POINTER.into());
+            }
+            Ok(String::from_utf8_lossy(std::slice::from_raw_parts(
                 blob.GetBufferPointer() as *const u8,
                 blob.GetBufferSize(),
             ))
-            .to_string()
-        })
+            .to_string())
+        }
     }
 
     #[inline]
