@@ -121,7 +121,7 @@ impl Builder<CommandQueue<command_list_type::Direct>> {
     }
 
     #[inline]
-    pub fn build_for_hwnd(self, hwnd: isize) -> windows::core::Result<SwapChain> {
+    pub fn build_for_hwnd(self, hwnd: *mut std::ffi::c_void) -> windows::core::Result<SwapChain> {
         let factory = dxgi_factory();
         let handle: IDXGISwapChain4 = unsafe {
             factory
@@ -196,7 +196,7 @@ impl SwapChain {
                 params.width.unwrap_or(0),
                 params.height.unwrap_or(0),
                 params.format.unwrap_or(DXGI_FORMAT_UNKNOWN),
-                params.flags.map_or(0, |flag| flag.0 as u32),
+                DXGI_SWAP_CHAIN_FLAG(params.flags.map_or(0, |flag| flag.0)),
             )?;
             Ok(())
         }
@@ -207,7 +207,7 @@ impl SwapChain {
         &self,
         fence: &Fence,
         interval: u32,
-        flags: u32,
+        flags: DXGI_PRESENT,
     ) -> windows::core::Result<Signal> {
         unsafe {
             self.handle.Present(interval, flags).ok()?;

@@ -443,7 +443,7 @@ fn main() -> anyhow::Result<()> {
             ]);
         })?;
         cmd_queue.execute_command_lists(&[&cmd_list]);
-        let signal = swap_chain.present(&fence, 0, 0)?;
+        let signal = swap_chain.present(&fence, 0, DXGI_PRESENT(0))?;
         signal.wait()?;
     }
     Ok(())
