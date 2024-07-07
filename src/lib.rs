@@ -10,6 +10,7 @@ pub mod dxc;
 pub mod features;
 mod fence;
 mod pipeline_state;
+pub mod prelude;
 pub mod raytracing;
 pub mod reflection;
 mod resource_barriers;
@@ -62,6 +63,7 @@ pub use descriptor_heap::{
     UnorderedAccessViewDesc,
 };
 pub use device::{Device, PlacedSubresourceFootprint, SubresourceFootprint};
+pub use dxc::{Blob, BlobType, RefBlob};
 pub use features::{Feature, RequestFeature};
 pub use fence::{Fence, Signal};
 pub use pipeline_state::*;
