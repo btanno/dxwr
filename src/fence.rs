@@ -132,6 +132,13 @@ impl Signal {
         }
         Ok(true)
     }
+    
+    #[inline]
+    pub fn is_completed(&self) -> bool {
+        unsafe {
+            self.fence.handle.GetCompletedValue() >= self.value
+        }
+    }
 
     #[inline]
     pub fn fence(&self) -> &Fence {
