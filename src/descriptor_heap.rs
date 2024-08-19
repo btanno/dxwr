@@ -1130,14 +1130,16 @@ where
             let handle = self.device.CreateDescriptorHeap(&self.desc)?;
             let name = self.name.as_ref().map(|name| Name::new(&handle, name));
             let inc = self.device.GetDescriptorHandleIncrementSize(self.desc.Type) as usize;
-            Ok(DescriptorHeap(Arc::new(Field {
-                device: self.device,
-                handle,
-                len: self.desc.NumDescriptors as usize,
+            Ok(DescriptorHeap {
+                field: Arc::new(Field {
+                    device: self.device,
+                    handle,
+                    len: self.desc.NumDescriptors as usize,
+                    inc,
+                    _t: self._t,
+                }),
                 name,
-                inc,
-                _t: self._t,
-            })))
+            })
         }
     }
 }
@@ -1148,12 +1150,14 @@ struct Field<T> {
     handle: ID3D12DescriptorHeap,
     len: usize,
     inc: usize,
-    name: Option<Name>,
     _t: std::marker::PhantomData<T>,
 }
 
 #[derive(Clone, Debug)]
-pub struct DescriptorHeap<T = ()>(Arc<Field<T>>);
+pub struct DescriptorHeap<T = ()> {
+    field: Arc<Field<T>>,
+    name: Option<Name>,
+}
 
 impl DescriptorHeap<()> {
     #[inline]
@@ -1183,17 +1187,17 @@ where
 {
     #[inline]
     pub fn len(&self) -> usize {
-        self.0.len
+        self.field.len
     }
 
     #[inline]
     pub fn cpu_handle(&self, index: usize) -> CpuDescriptorHandle<T> {
-        assert!(index < self.0.len);
+        assert!(index < self.field.len);
         unsafe {
-            let mut dh = self.0.handle.GetCPUDescriptorHandleForHeapStart();
-            dh.ptr += self.0.inc * index;
+            let mut dh = self.field.handle.GetCPUDescriptorHandleForHeapStart();
+            dh.ptr += self.field.inc * index;
             CpuDescriptorHandle {
-                heap: self.0.handle.clone(),
+                heap: self.field.handle.clone(),
                 handle: dh,
                 _t: std::marker::PhantomData,
             }
@@ -1202,12 +1206,12 @@ where
 
     #[inline]
     pub fn gpu_handle(&self, index: usize) -> GpuDescriptorHandle<T> {
-        assert!(index < self.0.len);
+        assert!(index < self.field.len);
         unsafe {
-            let mut dh = self.0.handle.GetGPUDescriptorHandleForHeapStart();
-            dh.ptr += (self.0.inc * index) as u64;
+            let mut dh = self.field.handle.GetGPUDescriptorHandleForHeapStart();
+            dh.ptr += (self.field.inc * index) as u64;
             GpuDescriptorHandle {
-                heap: self.0.handle.clone(),
+                heap: self.field.handle.clone(),
                 handle: dh,
                 _t: std::marker::PhantomData,
             }
@@ -1231,7 +1235,7 @@ where
         };
         let len = end - start;
         unsafe {
-            self.0.device.CopyDescriptorsSimple(
+            self.field.device.CopyDescriptorsSimple(
                 len as u32,
                 self.cpu_handle(start).handle,
                 src.cpu_handle(dest_start).handle,
@@ -1242,19 +1246,24 @@ where
 
     #[inline]
     pub fn handle(&self) -> &ID3D12DescriptorHeap {
-        &self.0.handle
+        &self.field.handle
     }
 
     #[inline]
     pub fn name(&self) -> Option<&str> {
-        self.0.name.as_ref().map(|n| n.as_str())
+        self.name.as_ref().map(|n| n.as_str())
+    }
+
+    #[inline]
+    pub fn set_name(&mut self, name: impl AsRef<str>) {
+        self.name = Some(Name::new(self.handle(), name));
     }
 }
 
 impl<T> PartialEq for DescriptorHeap<T> {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.0.handle == other.0.handle
+        self.field.handle == other.field.handle
     }
 }
 
@@ -1273,7 +1282,7 @@ impl DescriptorHeap<CbvSrvUav> {
         desc: Option<&ConstantBufferViewDesc>,
     ) {
         unsafe {
-            self.0.device.CreateConstantBufferView(
+            self.field.device.CreateConstantBufferView(
                 desc.map(|d| &d.0 as *const _),
                 self.cpu_handle(index).handle(),
             );
@@ -1288,7 +1297,7 @@ impl DescriptorHeap<CbvSrvUav> {
         desc: Option<&ShaderResourceViewDesc<U>>,
     ) {
         unsafe {
-            self.0.device.CreateShaderResourceView(
+            self.field.device.CreateShaderResourceView(
                 resource.handle(),
                 desc.map(|d| &d.desc as *const _),
                 self.cpu_handle(index).handle(),
@@ -1305,7 +1314,7 @@ impl DescriptorHeap<CbvSrvUav> {
         desc: Option<&UnorderedAccessViewDesc<U>>,
     ) {
         unsafe {
-            self.0.device.CreateUnorderedAccessView(
+            self.field.device.CreateUnorderedAccessView(
                 resource.handle(),
                 counter_resource.map(|r| r.handle()),
                 desc.map(|d| &d.desc as *const _),
@@ -1329,7 +1338,7 @@ impl DescriptorHeap<Rtv> {
         desc: Option<&RenderTargetViewDesc<U>>,
     ) {
         unsafe {
-            self.0.device.CreateRenderTargetView(
+            self.field.device.CreateRenderTargetView(
                 resource.handle(),
                 desc.map(|d| &d.desc as *const _),
                 self.cpu_handle(index).handle(),
@@ -1352,7 +1361,7 @@ impl DescriptorHeap<Dsv> {
         desc: Option<&DepthStencilViewDesc<U>>,
     ) {
         unsafe {
-            self.0.device.CreateDepthStencilView(
+            self.field.device.CreateDepthStencilView(
                 resource.handle(),
                 desc.map(|d| &d.desc as *const _),
                 self.cpu_handle(index).handle(),
@@ -1370,7 +1379,7 @@ impl DescriptorHeap<Sampler> {
     #[inline]
     pub fn create_sampler(&self, index: usize, desc: &SamplerDesc) {
         unsafe {
-            self.0
+            self.field
                 .device
                 .CreateSampler(&desc.0, self.cpu_handle(index).handle());
         }

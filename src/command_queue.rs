@@ -130,6 +130,11 @@ where
     pub fn name(&self) -> Option<&str> {
         self.name.as_ref().map(|n| n.as_str())
     }
+    
+    #[inline]
+    pub fn set_name(&mut self, name: impl AsRef<str>) {
+        self.name = Some(Name::new(self.handle(), name));
+    }
 }
 
 impl CommandQueue<command_list_type::Direct> {
