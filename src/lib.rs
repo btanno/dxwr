@@ -87,3 +87,5 @@ pub use state_object::{
 };
 pub use swap_chain::{ResizeBuffers, SwapChain};
 pub use utility::*;
+
+use device::DeviceType;
