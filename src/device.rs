@@ -108,9 +108,11 @@ pub struct ResourceAllocationInfo {
     pub alignment: u64,
 }
 
+pub(crate) type DeviceType = ID3D12Device8;
+
 #[derive(Clone, Debug)]
 pub struct Device {
-    handle: ID3D12Device8,
+    handle: DeviceType,
     name: Option<Name>,
 }
 
