@@ -32,26 +32,19 @@ impl<'a, 'b, 'c, 'd, 'e> PipelineStateDesc<'a, 'b, 'c, 'd, 'e> {
         input_elements: &'c [dxwr::InputElementDesc<'d>],
     ) -> Self {
         Self {
-            _root_signature: dxwr::StreamSubobject::new(root_sig.clone()),
-            _vs: dxwr::StreamSubobject::new(dxwr::Vs(dxwr::ShaderBytecode::new(include_bytes!(
-                "../examples/triangle/triangle.vs"
-            )))),
-            _ps: dxwr::StreamSubobject::new(dxwr::Ps(dxwr::ShaderBytecode::new(include_bytes!(
-                "../examples/triangle/triangle.ps"
-            )))),
-            _blend_desc: dxwr::StreamSubobject::default(),
-            _rasterizer_desc: dxwr::StreamSubobject::default(),
-            _depth_stencil_desc: dxwr::StreamSubobject::new(
-                dxwr::DepthStencilDesc::new().depth_enable(false),
-            ),
-            _primitive_topology: dxwr::StreamSubobject::new(dxwr::PrimitiveTopologyType(
+            _root_signature: root_sig.clone().into(),
+            _vs: dxwr::Vs::new(include_bytes!("../examples/triangle/triangle.vs")).into(),
+            _ps: dxwr::Ps::new(include_bytes!("../examples/triangle/triangle.ps")).into(),
+            _blend_desc: Default::default(),
+            _rasterizer_desc: Default::default(),
+            _depth_stencil_desc: dxwr::DepthStencilDesc::new().depth_enable(false).into(),
+            _primitive_topology: dxwr::PrimitiveTopologyType(
                 D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
-            )),
-            _input_layout: dxwr::StreamSubobject::new(dxwr::InputLayout(&input_elements)),
-            _rtv_formats: dxwr::StreamSubobject::new(dxwr::RenderTargetFormats(&[
-                DXGI_FORMAT_R8G8B8A8_UNORM,
-            ])),
-            _sample_desc: dxwr::StreamSubobject::default(),
+            )
+            .into(),
+            _input_layout: dxwr::InputLayout(&input_elements).into(),
+            _rtv_formats: dxwr::RenderTargetFormats(&[DXGI_FORMAT_R8G8B8A8_UNORM]).into(),
+            _sample_desc: Default::default(),
         }
     }
 }
