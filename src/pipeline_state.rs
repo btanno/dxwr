@@ -24,6 +24,20 @@ impl<'a> ShaderBytecode<'a> {
     }
 }
 
+impl<'a> From<&'a [u8]> for ShaderBytecode<'a> {
+    #[inline]
+    fn from(value: &'a [u8]) -> Self {
+        Self::new(value)
+    }
+}
+
+impl<'a, const N: usize> From<&'a [u8; N]> for ShaderBytecode<'a> {
+    #[inline]
+    fn from(value: &'a [u8; N]) -> Self {
+        Self::new(value)
+    }
+}
+
 #[derive(Clone, Debug)]
 #[repr(transparent)]
 pub struct SoDeclarationEntry<'a> {
@@ -782,23 +796,142 @@ impl<'cs> ComputePipelineStateDesc<'cs> {
 #[repr(transparent)]
 pub struct Vs<'a>(pub ShaderBytecode<'a>);
 
+impl<'a> Vs<'a> {
+    #[inline]
+    pub fn new(shader: impl Into<ShaderBytecode<'a>>) -> Self {
+        Self(shader.into())
+    }
+}
+
+impl<'a, T> From<T> for Vs<'a>
+where
+    T: Into<ShaderBytecode<'a>>
+{
+    #[inline]
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
+}
+
 #[repr(transparent)]
 pub struct Ps<'a>(pub ShaderBytecode<'a>);
+
+impl<'a> Ps<'a> {
+    #[inline]
+    pub fn new(shader: impl Into<ShaderBytecode<'a>>) -> Self {
+        Self(shader.into())
+    }
+}
+
+impl<'a, T> From<T> for Ps<'a>
+where
+    T: Into<ShaderBytecode<'a>>
+{
+    #[inline]
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
+}
 
 #[repr(transparent)]
 pub struct Ds<'a>(pub ShaderBytecode<'a>);
 
+impl<'a> Ds<'a> {
+    #[inline]
+    pub fn new(shader: impl Into<ShaderBytecode<'a>>) -> Self {
+        Self(shader.into())
+    }
+}
+
+impl<'a, T> From<T> for Ds<'a>
+where
+    T: Into<ShaderBytecode<'a>>
+{
+    #[inline]
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
+}
+
 #[repr(transparent)]
 pub struct Hs<'a>(pub ShaderBytecode<'a>);
+
+impl<'a> Hs<'a> {
+    #[inline]
+    pub fn new(shader: impl Into<ShaderBytecode<'a>>) -> Self {
+        Self(shader.into())
+    }
+}
+
+impl<'a, T> From<T> for Hs<'a>
+where
+    T: Into<ShaderBytecode<'a>>
+{
+    #[inline]
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
+}
 
 #[repr(transparent)]
 pub struct Gs<'a>(pub ShaderBytecode<'a>);
 
+impl<'a> Gs<'a> {
+    #[inline]
+    pub fn new(shader: impl Into<ShaderBytecode<'a>>) -> Self {
+        Self(shader.into())
+    }
+}
+
+impl<'a, T> From<T> for Gs<'a>
+where
+    T: Into<ShaderBytecode<'a>>
+{
+    #[inline]
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
+}
+
 #[repr(transparent)]
 pub struct Ms<'a>(pub ShaderBytecode<'a>);
 
+impl<'a> Ms<'a> {
+    #[inline]
+    pub fn new(shader: impl Into<ShaderBytecode<'a>>) -> Self {
+        Self(shader.into())
+    }
+}
+
+impl<'a, T> From<T> for Ms<'a>
+where
+    T: Into<ShaderBytecode<'a>>
+{
+    #[inline]
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
+}
+
 #[repr(transparent)]
 pub struct As<'a>(pub ShaderBytecode<'a>);
+
+impl<'a> As<'a> {
+    #[inline]
+    pub fn new(shader: impl Into<ShaderBytecode<'a>>) -> Self {
+        Self(shader.into())
+    }
+}
+
+impl<'a, T> From<T> for As<'a>
+where
+    T: Into<ShaderBytecode<'a>>
+{
+    #[inline]
+    fn from(value: T) -> Self {
+        Self::new(value)
+    }
+}
 
 #[repr(transparent)]
 pub struct SampleMask(pub u32);
@@ -1099,6 +1232,16 @@ where
     #[inline]
     fn default() -> Self {
         Self::new(T::default())
+    }
+}
+
+impl<T> From<T> for StreamSubobject<T>
+where
+    T: Subobject,
+{
+    #[inline]
+    fn from(value: T) -> Self {
+        Self::new(value)
     }
 }
 
