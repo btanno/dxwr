@@ -10,24 +10,28 @@ pub trait Type {
 pub mod descriptor_heap_type {
     use super::*;
 
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
     pub struct CbvSrvUav;
 
     impl Type for CbvSrvUav {
         const VALUE: D3D12_DESCRIPTOR_HEAP_TYPE = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     }
 
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
     pub struct Rtv;
 
     impl Type for Rtv {
         const VALUE: D3D12_DESCRIPTOR_HEAP_TYPE = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     }
 
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
     pub struct Dsv;
 
     impl Type for Dsv {
         const VALUE: D3D12_DESCRIPTOR_HEAP_TYPE = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     }
 
+    #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
     pub struct Sampler;
 
     impl Type for Sampler {
