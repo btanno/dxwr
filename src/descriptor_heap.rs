@@ -996,7 +996,15 @@ pub struct SamplerDesc(D3D12_SAMPLER_DESC);
 impl SamplerDesc {
     #[inline]
     pub fn new() -> Self {
-        Self(D3D12_SAMPLER_DESC::default())
+        Self(D3D12_SAMPLER_DESC {
+            Filter: D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+            AddressU: D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+            AddressV: D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+            AddressW: D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+            ComparisonFunc: D3D12_COMPARISON_FUNC_LESS_EQUAL,
+            MaxLOD: f32::MAX,
+            ..Default::default()
+        })
     }
 
     #[inline]
@@ -1019,7 +1027,7 @@ impl SamplerDesc {
 
     #[inline]
     pub fn address_w(mut self, mode: D3D12_TEXTURE_ADDRESS_MODE) -> Self {
-        self.0.AddressV = mode;
+        self.0.AddressW = mode;
         self
     }
 
