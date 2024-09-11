@@ -133,8 +133,8 @@ fn main() -> anyhow::Result<()> {
                         bottom: size.height as i32,
                         ..Default::default()
                     }]);
-                    cmd.clear_render_target_view(rtv_handle.clone(), &[0.0, 0.0, 0.3, 0.0], None);
-                    cmd.om_set_render_targets(Some(&[rtv_handle.clone()]), true, None);
+                    cmd.clear_render_target_view(&rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
+                    cmd.om_set_render_targets(Some(&[&rtv_handle]), true, None);
                     cmd.ia_set_vertex_buffers(
                         0,
                         Some(&[dxwr::VertexBufferView::new()

@@ -2,10 +2,20 @@ use super::*;
 use windows::Win32::Graphics::Direct3D::*;
 use windows::Win32::Graphics::Direct3D12::*;
 
+#[derive(Clone, Debug)]
 #[repr(transparent)]
 pub struct DescriptorRange(D3D12_DESCRIPTOR_RANGE);
 
 impl DescriptorRange {
+    #[inline]
+    pub fn new(t: D3D12_DESCRIPTOR_RANGE_TYPE) -> Self {
+        Self(D3D12_DESCRIPTOR_RANGE {
+            RangeType: t,
+            OffsetInDescriptorsFromTableStart: D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND,
+            ..Default::default()
+        })
+    }
+
     #[inline]
     pub fn cbv() -> Self {
         Self(D3D12_DESCRIPTOR_RANGE {
@@ -61,8 +71,9 @@ impl DescriptorRange {
     }
 
     #[inline]
-    pub fn offset_in_descriptors_from_table_start(mut self, offset: u32) -> Self {
-        self.0.OffsetInDescriptorsFromTableStart = offset;
+    pub fn offset_in_descriptors_from_table_start(mut self, offset: Option<u32>) -> Self {
+        self.0.OffsetInDescriptorsFromTableStart =
+            offset.unwrap_or(D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND);
         self
     }
 }
@@ -105,15 +116,16 @@ pub mod root_parameter_type {
     }
 }
 
-#[repr(transparent)]
-pub struct RootParameter<'a, T = ()> {
+#[derive(Clone)]
+pub struct RootParameter<T = ()> {
     param: D3D12_ROOT_PARAMETER,
-    _t: std::marker::PhantomData<&'a T>,
+    ranges: Option<Vec<D3D12_DESCRIPTOR_RANGE>>,
+    _t: std::marker::PhantomData<T>,
 }
 
-impl<'a> RootParameter<'a, ()> {
+impl RootParameter<()> {
     #[inline]
-    pub fn new<T>(_t: T) -> RootParameter<'a, T>
+    pub fn new<T>(_t: T) -> RootParameter<T>
     where
         T: RootParameterType,
     {
@@ -123,37 +135,38 @@ impl<'a> RootParameter<'a, ()> {
                 ShaderVisibility: D3D12_SHADER_VISIBILITY_ALL,
                 ..Default::default()
             },
+            ranges: None,
             _t: std::marker::PhantomData,
         }
     }
 
     #[inline]
-    pub fn cbv() -> RootParameter<'a, root_parameter_type::Cbv> {
+    pub fn cbv() -> RootParameter<root_parameter_type::Cbv> {
         Self::new(root_parameter_type::Cbv)
     }
 
     #[inline]
-    pub fn srv() -> RootParameter<'a, root_parameter_type::Srv> {
+    pub fn srv() -> RootParameter<root_parameter_type::Srv> {
         Self::new(root_parameter_type::Srv)
     }
 
     #[inline]
-    pub fn uav() -> RootParameter<'a, root_parameter_type::Uav> {
+    pub fn uav() -> RootParameter<root_parameter_type::Uav> {
         Self::new(root_parameter_type::Uav)
     }
 
     #[inline]
-    pub fn constants_32bit() -> RootParameter<'a, root_parameter_type::Constants32bit> {
+    pub fn constants_32bit() -> RootParameter<root_parameter_type::Constants32bit> {
         Self::new(root_parameter_type::Constants32bit)
     }
 
     #[inline]
-    pub fn descriptor_table() -> RootParameter<'a, root_parameter_type::DescriptorTable> {
+    pub fn descriptor_table() -> RootParameter<root_parameter_type::DescriptorTable> {
         Self::new(root_parameter_type::DescriptorTable)
     }
 }
 
-impl<'a, T> RootParameter<'a, T>
+impl<T> RootParameter<T>
 where
     T: RootParameterType,
 {
@@ -164,12 +177,16 @@ where
     }
 }
 
-impl<'a> RootParameter<'a, root_parameter_type::DescriptorTable> {
+impl RootParameter<root_parameter_type::DescriptorTable> {
     #[inline]
     pub fn ranges(
         self,
-        ranges: &[DescriptorRange],
+        ranges: impl IntoIterator<Item = DescriptorRange>,
     ) -> RootParameter<root_parameter_type::DescriptorTable> {
+        let ranges = ranges
+            .into_iter()
+            .map(|range| range.0.clone())
+            .collect::<Vec<D3D12_DESCRIPTOR_RANGE>>();
         RootParameter {
             param: D3D12_ROOT_PARAMETER {
                 ParameterType: self.param.ParameterType,
@@ -181,12 +198,13 @@ impl<'a> RootParameter<'a, root_parameter_type::DescriptorTable> {
                     },
                 },
             },
+            ranges: Some(ranges),
             _t: std::marker::PhantomData,
         }
     }
 }
 
-impl<'a> RootParameter<'a, root_parameter_type::Constants32bit> {
+impl RootParameter<root_parameter_type::Constants32bit> {
     #[inline]
     pub fn shader_register(mut self, reg: u32) -> Self {
         self.param.Anonymous.Constants.ShaderRegister = reg;
@@ -206,7 +224,7 @@ impl<'a> RootParameter<'a, root_parameter_type::Constants32bit> {
     }
 }
 
-impl<'a> RootParameter<'a, root_parameter_type::Cbv> {
+impl RootParameter<root_parameter_type::Cbv> {
     #[inline]
     pub fn shader_register(mut self, reg: u32) -> Self {
         self.param.Anonymous.Descriptor.ShaderRegister = reg;
@@ -220,7 +238,7 @@ impl<'a> RootParameter<'a, root_parameter_type::Cbv> {
     }
 }
 
-impl<'a> RootParameter<'a, root_parameter_type::Srv> {
+impl RootParameter<root_parameter_type::Srv> {
     #[inline]
     pub fn shader_register(mut self, reg: u32) -> Self {
         self.param.Anonymous.Descriptor.ShaderRegister = reg;
@@ -234,7 +252,7 @@ impl<'a> RootParameter<'a, root_parameter_type::Srv> {
     }
 }
 
-impl<'a> RootParameter<'a, root_parameter_type::Uav> {
+impl RootParameter<root_parameter_type::Uav> {
     #[inline]
     pub fn shader_register(mut self, reg: u32) -> Self {
         self.param.Anonymous.Descriptor.ShaderRegister = reg;
@@ -248,18 +266,26 @@ impl<'a> RootParameter<'a, root_parameter_type::Uav> {
     }
 }
 
-impl<'a, T> From<RootParameter<'a, T>> for RootParameter<'a, ()>
+impl<T> From<RootParameter<T>> for RootParameter<()>
 where
     T: RootParameterType,
 {
-    fn from(value: RootParameter<'a, T>) -> Self {
+    fn from(value: RootParameter<T>) -> Self {
         Self {
             param: value.param,
+            ranges: value.ranges,
             _t: std::marker::PhantomData,
         }
     }
 }
 
+impl<T> std::fmt::Debug for RootParameter<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "RootParameter {{ {:?} .. }}", self.ranges)
+    }
+}
+
+#[derive(Clone, Debug)]
 #[repr(transparent)]
 pub struct StaticSamplerDesc(D3D12_STATIC_SAMPLER_DESC);
 
@@ -359,54 +385,50 @@ impl StaticSamplerDesc {
     }
 }
 
-#[repr(transparent)]
+#[derive(Clone)]
 pub struct RootSignatureDesc<'params, 'samplers> {
-    desc: D3D12_ROOT_SIGNATURE_DESC,
-    _params: std::marker::PhantomData<&'params ()>,
-    _samplers: std::marker::PhantomData<&'samplers ()>,
+    params: Option<&'params [RootParameter<()>]>,
+    samplers: Option<&'samplers [StaticSamplerDesc]>,
+    flags: D3D12_ROOT_SIGNATURE_FLAGS,
 }
 
 impl<'params, 'samplers> RootSignatureDesc<'params, 'samplers> {
     #[inline]
     pub fn new() -> Self {
         Self {
-            desc: D3D12_ROOT_SIGNATURE_DESC::default(),
-            _params: std::marker::PhantomData,
-            _samplers: std::marker::PhantomData,
+            params: None,
+            samplers: None,
+            flags: D3D12_ROOT_SIGNATURE_FLAG_NONE,
         }
     }
 
     #[inline]
     pub fn parameters<'a>(
-        mut self,
-        params: &'a [RootParameter<'_, ()>],
+        self,
+        params: &'a [RootParameter<()>],
     ) -> RootSignatureDesc<'a, 'samplers> {
-        self.desc.pParameters = params.as_ptr() as *const D3D12_ROOT_PARAMETER;
-        self.desc.NumParameters = params.len() as u32;
         RootSignatureDesc {
-            desc: self.desc,
-            _params: std::marker::PhantomData,
-            _samplers: std::marker::PhantomData,
+            params: Some(params),
+            samplers: self.samplers,
+            flags: self.flags,
         }
     }
 
     #[inline]
     pub fn static_samplers<'b>(
-        mut self,
+        self,
         samplers: &'b [StaticSamplerDesc],
     ) -> RootSignatureDesc<'params, 'b> {
-        self.desc.pStaticSamplers = samplers.as_ptr() as *const D3D12_STATIC_SAMPLER_DESC;
-        self.desc.NumStaticSamplers = samplers.len() as u32;
         RootSignatureDesc {
-            desc: self.desc,
-            _params: std::marker::PhantomData,
-            _samplers: std::marker::PhantomData,
+            params: self.params,
+            samplers: Some(samplers),
+            flags: self.flags,
         }
     }
 
     #[inline]
     pub fn flags(mut self, flags: D3D12_ROOT_SIGNATURE_FLAGS) -> Self {
-        self.desc.Flags = flags;
+        self.flags = flags;
         self
     }
 }
@@ -444,9 +466,26 @@ impl Builder {
 
     #[inline]
     pub fn build_from_desc(self, desc: &RootSignatureDesc) -> windows::core::Result<RootSignature> {
+        let parameters = desc
+            .params
+            .as_ref()
+            .map(|params| params.iter().map(|p| p.param.clone()).collect::<Vec<_>>())
+            .unwrap_or_else(|| vec![]);
+        let samplers = desc
+            .samplers
+            .as_ref()
+            .map(|samplers| samplers.to_vec())
+            .unwrap_or_else(|| vec![]);
+        let desc = D3D12_ROOT_SIGNATURE_DESC {
+            NumParameters: parameters.len() as u32,
+            pParameters: parameters.as_ptr(),
+            NumStaticSamplers: samplers.len() as u32,
+            pStaticSamplers: samplers.as_ptr() as *const D3D12_STATIC_SAMPLER_DESC,
+            Flags: desc.flags,
+        };
         let blob = unsafe {
             let mut blob: Option<ID3DBlob> = None;
-            D3D12SerializeRootSignature(&desc.desc, D3D_ROOT_SIGNATURE_VERSION_1, &mut blob, None)
+            D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &mut blob, None)
                 .map(|_| blob.unwrap())?
         };
         let handle = unsafe {

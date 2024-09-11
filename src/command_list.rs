@@ -194,8 +194,8 @@ impl StreamOutputBufferView {
 pub trait ClearUnorderedAccessView: Sized {
     fn call(
         cmd_list: &ID3D12GraphicsCommandList7,
-        view_gpu_handle: GpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
-        view_cpu_handle: CpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
+        view_gpu_handle: &GpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
+        view_cpu_handle: &CpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
         resource: &Resource,
         values: &[Self; 4],
         rects: &[Rect],
@@ -205,8 +205,8 @@ pub trait ClearUnorderedAccessView: Sized {
 impl ClearUnorderedAccessView for f32 {
     fn call(
         cmd_list: &ID3D12GraphicsCommandList7,
-        view_gpu_handle: GpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
-        view_cpu_handle: CpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
+        view_gpu_handle: &GpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
+        view_cpu_handle: &CpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
         resource: &Resource,
         values: &[Self; 4],
         rects: &[Rect],
@@ -226,8 +226,8 @@ impl ClearUnorderedAccessView for f32 {
 impl ClearUnorderedAccessView for u32 {
     fn call(
         cmd_list: &ID3D12GraphicsCommandList7,
-        view_gpu_handle: GpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
-        view_cpu_handle: CpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
+        view_gpu_handle: &GpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
+        view_cpu_handle: &CpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
         resource: &Resource,
         values: &[Self; 4],
         rects: &[Rect],
@@ -383,7 +383,7 @@ impl<'a, T> Commands<'a, T> {
     #[inline]
     pub fn clear_depth_stencil_view(
         &self,
-        dsv: CpuDescriptorHandle<Dsv>,
+        dsv: &CpuDescriptorHandle<Dsv>,
         depth: Option<f32>,
         stencil: Option<u8>,
         rects: Option<&[Rect]>,
@@ -404,7 +404,7 @@ impl<'a, T> Commands<'a, T> {
     #[inline]
     pub fn clear_render_target_view(
         &self,
-        rtv: CpuDescriptorHandle<Rtv>,
+        rtv: &CpuDescriptorHandle<Rtv>,
         color: &[f32; 4],
         rects: Option<&[Rect]>,
     ) {
@@ -417,8 +417,8 @@ impl<'a, T> Commands<'a, T> {
     #[inline]
     pub fn clear_unordered_access_view<U>(
         &self,
-        view_gpu_handle_in_current_heap: GpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
-        view_cpu_handle: CpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
+        view_gpu_handle_in_current_heap: &GpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
+        view_cpu_handle: &CpuDescriptorHandle<descriptor_heap_type::CbvSrvUav>,
         resource: &Resource,
         values: &[U; 4],
         rects: &[Rect],
@@ -606,7 +606,7 @@ impl<'a, T> Commands<'a, T> {
     #[inline]
     pub fn om_set_render_targets(
         &self,
-        rtvs: Option<&[CpuDescriptorHandle<Rtv>]>,
+        rtvs: Option<&[&CpuDescriptorHandle<Rtv>]>,
         rts_single_handle_to_descriptor_range: bool,
         depth_stencil: Option<&CpuDescriptorHandle<Dsv>>,
     ) {
@@ -736,7 +736,7 @@ impl<'a, T> Commands<'a, T> {
     pub fn set_graphics_root_descriptor_table<D>(
         &self,
         root_parameter_index: u32,
-        base_descriptor: GpuDescriptorHandle<D>,
+        base_descriptor: &GpuDescriptorHandle<D>,
     ) {
         unsafe {
             self.cmd_list
@@ -800,7 +800,7 @@ impl<'a, T> Commands<'a, T> {
     pub fn set_compute_root_descriptor_table<D>(
         &self,
         root_parameter_index: u32,
-        base_descriptor: GpuDescriptorHandle<D>,
+        base_descriptor: &GpuDescriptorHandle<D>,
     ) {
         unsafe {
             self.cmd_list
