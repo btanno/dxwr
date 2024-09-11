@@ -87,7 +87,7 @@ fn main() -> anyhow::Result<()> {
         .build_from_desc(
             &dxwr::RootSignatureDesc::new().parameters(&[
                 dxwr::RootParameter::new(dxwr::root_parameter_type::DescriptorTable)
-                    .ranges(&[dxwr::DescriptorRange::uav().num_descriptors(1)])
+                    .ranges([dxwr::DescriptorRange::uav().num_descriptors(1)])
                     .into(),
                 dxwr::RootParameter::new(dxwr::root_parameter_type::Srv)
                     .register_space(0)
@@ -406,7 +406,7 @@ fn main() -> anyhow::Result<()> {
         cmd_list.record(&cmd_allocator, |cmd| {
             cmd.set_compute_root_signature(&global_root_signature);
             cmd.set_descriptor_heaps(Some(&descriptor_heap), None);
-            cmd.set_compute_root_descriptor_table(0, descriptor_heap.gpu_handle(0));
+            cmd.set_compute_root_descriptor_table(0, &descriptor_heap.gpu_handle(0));
             cmd.set_compute_root_shader_resource_view(1, tlas.get_gpu_virtual_address());
             cmd.set_pipeline_state(&state_object);
             cmd.dispatch_rays(&dispatch_rays_desc);
@@ -415,7 +415,7 @@ fn main() -> anyhow::Result<()> {
                 .subresource(0)
                 .state_before(D3D12_RESOURCE_STATE_PRESENT)
                 .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
-            cmd.clear_render_target_view(rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
+            cmd.clear_render_target_view(&rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
             cmd.resource_barrier(&[
                 dxwr::TransitionBarrier::new()
                     .resource(rt)

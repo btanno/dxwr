@@ -56,7 +56,7 @@ fn main() -> anyhow::Result<()> {
                         .subresource(0)
                         .state_before(D3D12_RESOURCE_STATE_PRESENT)
                         .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
-                    cmd.clear_render_target_view(rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
+                    cmd.clear_render_target_view(&rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
                     cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
                         .resource(&rt)
                         .subresource(0)
