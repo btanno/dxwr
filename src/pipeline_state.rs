@@ -98,6 +98,7 @@ pub struct StreamOutputDesc<'decl, 'strides> {
 
 impl<'decl, 'strides> StreamOutputDesc<'decl, 'strides> {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             desc: Default::default(),
@@ -232,11 +233,7 @@ impl BlendDesc {
     where
         F: FnOnce(&mut [RenderTargetBlendDesc; 8]),
     {
-        let mut rtbs = self
-            .0
-            .RenderTarget
-            .each_mut()
-            .map(|rt| RenderTargetBlendDesc(rt));
+        let mut rtbs = self.0.RenderTarget.each_mut().map(RenderTargetBlendDesc);
         f(&mut rtbs);
         self
     }
@@ -465,6 +462,7 @@ pub struct InputElementDesc<'a> {
 
 impl<'a> InputElementDesc<'a> {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             desc: D3D12_INPUT_ELEMENT_DESC {
@@ -477,7 +475,7 @@ impl<'a> InputElementDesc<'a> {
     }
 
     #[inline]
-    pub fn semantic_name<'b>(self, name: &'b [u8]) -> InputElementDesc<'b> {
+    pub fn semantic_name(self, name: &[u8]) -> InputElementDesc {
         InputElementDesc {
             desc: D3D12_INPUT_ELEMENT_DESC {
                 SemanticName: PCSTR(name.as_ptr()),
@@ -542,6 +540,7 @@ impl<'vs, 'ps, 'ds, 'hs, 'gs, 'so_decl, 'so_strides, 'input_layout>
     GraphicsPipelineStateDesc<'vs, 'ps, 'ds, 'hs, 'gs, 'so_decl, 'so_strides, 'input_layout>
 {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             desc: D3D12_GRAPHICS_PIPELINE_STATE_DESC {
@@ -750,6 +749,7 @@ pub struct ComputePipelineStateDesc<'cs> {
 
 impl<'cs> ComputePipelineStateDesc<'cs> {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             desc: D3D12_COMPUTE_PIPELINE_STATE_DESC::default(),
@@ -764,7 +764,7 @@ impl<'cs> ComputePipelineStateDesc<'cs> {
     }
 
     #[inline]
-    pub fn cs<'a>(self, bytecode: ShaderBytecode<'a>) -> ComputePipelineStateDesc<'a> {
+    pub fn cs(self, bytecode: ShaderBytecode) -> ComputePipelineStateDesc {
         ComputePipelineStateDesc {
             desc: D3D12_COMPUTE_PIPELINE_STATE_DESC {
                 CS: bytecode.desc,
@@ -962,6 +962,7 @@ pub struct ViewInstanceLocation(D3D12_VIEW_INSTANCE_LOCATION);
 
 impl ViewInstanceLocation {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(D3D12_VIEW_INSTANCE_LOCATION::default())
     }
@@ -1016,7 +1017,7 @@ pub trait Subobject {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE;
     type Inner;
 
-    fn new(self) -> Self::Inner;
+    fn create(self) -> Self::Inner;
 }
 
 impl Subobject for RootSignature {
@@ -1024,7 +1025,7 @@ impl Subobject for RootSignature {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE;
     type Inner = ID3D12RootSignature;
 
-    fn new(self) -> Self::Inner {
+    fn create(self) -> Self::Inner {
         self.handle().clone()
     }
 }
@@ -1033,7 +1034,7 @@ impl<'a> Subobject for Vs<'a> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1042,7 +1043,7 @@ impl<'a> Subobject for Ps<'a> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PS;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1051,7 +1052,7 @@ impl<'a> Subobject for Ds<'a> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DS;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1060,7 +1061,7 @@ impl<'a> Subobject for Hs<'a> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_HS;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1069,7 +1070,7 @@ impl<'a> Subobject for Gs<'a> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_GS;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1078,7 +1079,7 @@ impl<'a> Subobject for Ms<'a> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_MS;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1087,7 +1088,7 @@ impl<'a> Subobject for As<'a> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_AS;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1097,7 +1098,7 @@ impl<'decl, 'strides> Subobject for StreamOutputDesc<'decl, 'strides> {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_STREAM_OUTPUT;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1106,7 +1107,7 @@ impl Subobject for BlendDesc {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1116,7 +1117,7 @@ impl Subobject for SampleMask {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1126,7 +1127,7 @@ impl Subobject for RasterizerDesc {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1136,7 +1137,7 @@ impl Subobject for DepthStencilDesc {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1146,7 +1147,7 @@ impl<'a, 'b> Subobject for InputLayout<'a, 'b> {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1156,7 +1157,7 @@ impl Subobject for IbStripCutValue {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_IB_STRIP_CUT_VALUE;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1166,7 +1167,7 @@ impl Subobject for PrimitiveTopologyType {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1176,7 +1177,7 @@ impl<'a> Subobject for RenderTargetFormats<'a> {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS;
     type Inner = D3D12_RT_FORMAT_ARRAY;
 
-    fn new(self) -> Self::Inner {
+    fn create(self) -> Self::Inner {
         let mut inner = D3D12_RT_FORMAT_ARRAY {
             RTFormats: [DXGI_FORMAT_UNKNOWN; 8],
             NumRenderTargets: self.0.len() as u32,
@@ -1191,7 +1192,7 @@ impl Subobject for DepthStencilFormat {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL_FORMAT;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1201,7 +1202,7 @@ impl Subobject for SampleDesc {
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_DESC;
     type Inner = Self;
 
-    fn new(self) -> Self {
+    fn create(self) -> Self {
         self
     }
 }
@@ -1220,7 +1221,7 @@ where
     pub fn new(object: T) -> Self {
         Self {
             ty: T::VALUE,
-            inner: object.new(),
+            inner: object.create(),
         }
     }
 }
@@ -1345,6 +1346,7 @@ pub struct PipelineState {
 
 impl PipelineState {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder {
         Builder::new(device.handle())
     }

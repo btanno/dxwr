@@ -491,6 +491,7 @@ pub struct Resource {
 
 impl Resource {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder {
         Builder::new(device.handle().clone().into())
     }
@@ -629,7 +630,7 @@ pub mod heap {
                     .CreateHeap(
                         &D3D12_HEAP_DESC {
                             SizeInBytes: self.size,
-                            Properties: self.heap_properties.0.clone(),
+                            Properties: self.heap_properties.0,
                             Alignment: self.alignment,
                             Flags: self.flags,
                         },
@@ -651,6 +652,7 @@ pub struct Heap {
 
 impl Heap {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> heap::Builder {
         heap::Builder::new(device)
     }

@@ -12,6 +12,7 @@ pub struct VertexBufferView {
 
 impl VertexBufferView {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             view: D3D12_VERTEX_BUFFER_VIEW::default(),
@@ -45,6 +46,7 @@ pub struct IndexBufferView {
 
 impl IndexBufferView {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             view: D3D12_INDEX_BUFFER_VIEW::default(),
@@ -77,6 +79,7 @@ pub struct DiscardRegion<'a> {
 
 impl<'a> DiscardRegion<'a> {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             region: D3D12_DISCARD_REGION::default(),
@@ -85,7 +88,7 @@ impl<'a> DiscardRegion<'a> {
     }
 
     #[inline]
-    pub fn rects<'b>(self, rects: &'b [Rect]) -> DiscardRegion<'b> {
+    pub fn rects(self, rects: &[Rect]) -> DiscardRegion {
         DiscardRegion {
             region: D3D12_DISCARD_REGION {
                 NumRects: rects.len() as u32,
@@ -115,6 +118,7 @@ pub struct DispatchRaysDesc(D3D12_DISPATCH_RAYS_DESC);
 
 impl DispatchRaysDesc {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(D3D12_DISPATCH_RAYS_DESC::default())
     }
@@ -168,6 +172,7 @@ pub struct StreamOutputBufferView(D3D12_STREAM_OUTPUT_BUFFER_VIEW);
 
 impl StreamOutputBufferView {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(D3D12_STREAM_OUTPUT_BUFFER_VIEW::default())
     }
@@ -681,17 +686,18 @@ impl<'a, T> Commands<'a, T> {
         sampler: Option<&DescriptorHeap<Sampler>>,
     ) {
         unsafe {
+            #[allow(clippy::unnecessary_unwrap)]
             if cbv_srv_uav.is_some() && sampler.is_some() {
                 self.cmd_list.SetDescriptorHeaps(&[
                     Some(cbv_srv_uav.unwrap().handle().clone()),
                     Some(sampler.unwrap().handle().clone()),
                 ]);
-            } else if cbv_srv_uav.is_some() {
+            } else if let Some(cbv_srv_uav) = cbv_srv_uav {
                 self.cmd_list
-                    .SetDescriptorHeaps(&[Some(cbv_srv_uav.unwrap().handle().clone())]);
-            } else if sampler.is_some() {
+                    .SetDescriptorHeaps(&[Some(cbv_srv_uav.handle().clone())]);
+            } else if let Some(sampler) = sampler {
                 self.cmd_list
-                    .SetDescriptorHeaps(&[Some(sampler.unwrap().handle().clone())]);
+                    .SetDescriptorHeaps(&[Some(sampler.handle().clone())]);
             }
         }
     }
@@ -705,7 +711,7 @@ impl<'a, T> Commands<'a, T> {
 
     #[inline]
     pub fn set_pipeline_state(&self, state: &impl PipelineStateType) {
-        state.call(&self.cmd_list);
+        state.call(self.cmd_list);
     }
 
     #[inline]
@@ -726,7 +732,7 @@ impl<'a, T> Commands<'a, T> {
     {
         SetGraphicsRoot32BitConstants::call(
             src_data,
-            &self.cmd_list,
+            self.cmd_list,
             root_parameter_index,
             dest_offset_in_32bit_values,
         );
@@ -798,7 +804,7 @@ impl<'a, T> Commands<'a, T> {
     {
         SetComputeRoot32BitConstants::call(
             src_data,
-            &self.cmd_list,
+            self.cmd_list,
             root_parameter_index,
             dest_offset_in_32bit_values,
         );
@@ -1040,6 +1046,7 @@ where
 
 impl GraphicsCommandList<command_list_type::Direct> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::Direct> {
         Builder::new(device.handle())
     }
@@ -1047,6 +1054,7 @@ impl GraphicsCommandList<command_list_type::Direct> {
 
 impl GraphicsCommandList<command_list_type::Compute> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::Compute> {
         Builder::new(device.handle())
     }
@@ -1054,6 +1062,7 @@ impl GraphicsCommandList<command_list_type::Compute> {
 
 impl GraphicsCommandList<command_list_type::Bundle> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::Bundle> {
         Builder::new(device.handle())
     }
@@ -1061,6 +1070,7 @@ impl GraphicsCommandList<command_list_type::Bundle> {
 
 impl GraphicsCommandList<command_list_type::Copy> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::Copy> {
         Builder::new(device.handle())
     }
@@ -1068,6 +1078,7 @@ impl GraphicsCommandList<command_list_type::Copy> {
 
 impl GraphicsCommandList<command_list_type::VideoDecode> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::VideoDecode> {
         Builder::new(device.handle())
     }
@@ -1075,6 +1086,7 @@ impl GraphicsCommandList<command_list_type::VideoDecode> {
 
 impl GraphicsCommandList<command_list_type::VideoEncode> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::VideoEncode> {
         Builder::new(device.handle())
     }
@@ -1082,6 +1094,7 @@ impl GraphicsCommandList<command_list_type::VideoEncode> {
 
 impl GraphicsCommandList<command_list_type::VideoProcess> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::VideoProcess> {
         Builder::new(device.handle())
     }

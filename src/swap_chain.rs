@@ -159,6 +159,7 @@ pub struct SwapChain {
 
 impl SwapChain {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new() -> Builder {
         Builder::new()
     }
@@ -212,6 +213,6 @@ impl SwapChain {
         unsafe {
             self.handle.Present(interval, flags).ok()?;
         }
-        Ok(self.cmd_queue.signal(fence)?)
+        self.cmd_queue.signal(fence)
     }
 }

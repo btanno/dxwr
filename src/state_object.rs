@@ -111,6 +111,7 @@ pub struct ExportDesc {
 
 impl ExportDesc {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             name: HSTRING::new(),
@@ -127,7 +128,7 @@ impl ExportDesc {
 
     #[inline]
     pub fn export_to_rename(mut self, name: Option<&str>) -> Self {
-        self.export_to_rename = name.map(|n| HSTRING::from(n));
+        self.export_to_rename = name.map(HSTRING::from);
         self
     }
 }
@@ -335,6 +336,7 @@ pub struct RaytracingShaderConfig(D3D12_RAYTRACING_SHADER_CONFIG);
 
 impl RaytracingShaderConfig {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(D3D12_RAYTRACING_SHADER_CONFIG::default())
     }
@@ -364,6 +366,7 @@ pub struct RaytracingPipelineConfig(D3D12_RAYTRACING_PIPELINE_CONFIG1);
 
 impl RaytracingPipelineConfig {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(D3D12_RAYTRACING_PIPELINE_CONFIG1::default())
     }
@@ -397,6 +400,7 @@ pub struct HitGroupDesc {
 
 impl HitGroupDesc {
     #[inline]
+    #[allow(clippy::new_ret_no_self, clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             desc: Default::default(),
@@ -553,6 +557,7 @@ pub struct StateObject {
 
 impl StateObject {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device, ty: D3D12_STATE_OBJECT_TYPE) -> Builder {
         Builder::new(device.handle(), ty)
     }

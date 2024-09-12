@@ -16,8 +16,8 @@ pub fn enable_debug_layer() -> windows::core::Result<()> {
     Ok(())
 }
 
-static DBG_HANDLERS: OnceLock<Mutex<Vec<Box<(dyn Fn(&str) + Send + Sync + 'static)>>>> =
-    OnceLock::new();
+type DebugHandler = Box<(dyn Fn(&str) + Send + Sync + 'static)>;
+static DBG_HANDLERS: OnceLock<Mutex<Vec<DebugHandler>>> = OnceLock::new();
 
 fn call_dbg_handlers(msg: &str) {
     let Some(handlers) = DBG_HANDLERS.get().and_then(|handlers| handlers.lock().ok()) else {

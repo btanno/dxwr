@@ -28,6 +28,10 @@ pub trait BlobType: Sized {
         unsafe { self.handle().GetBufferPointer() }
     }
 
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     fn len(&self) -> usize {
         unsafe { self.handle().GetBufferSize() }
     }
@@ -69,7 +73,7 @@ impl<'a> RefBlob<'a> {
 
 impl<'a> BlobType for RefBlob<'a> {
     fn handle(&self) -> IDxcBlob {
-        self.blob.clone().into()
+        self.blob.clone()
     }
 }
 
@@ -223,6 +227,7 @@ pub struct Arguments {
 
 impl Arguments {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             source_name: None,

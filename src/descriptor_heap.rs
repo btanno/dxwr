@@ -50,7 +50,7 @@ pub struct CpuDescriptorHandle<T> {
 impl<T> CpuDescriptorHandle<T> {
     #[inline]
     pub fn handle(&self) -> D3D12_CPU_DESCRIPTOR_HANDLE {
-        self.handle.clone()
+        self.handle
     }
 }
 
@@ -58,7 +58,7 @@ impl<T> Clone for CpuDescriptorHandle<T> {
     fn clone(&self) -> Self {
         Self {
             heap: self.heap.clone(),
-            handle: self.handle.clone(),
+            handle: self.handle,
             _t: std::marker::PhantomData,
         }
     }
@@ -74,7 +74,7 @@ pub struct GpuDescriptorHandle<T> {
 impl<T> GpuDescriptorHandle<T> {
     #[inline]
     pub fn handle(&self) -> D3D12_GPU_DESCRIPTOR_HANDLE {
-        self.handle.clone()
+        self.handle
     }
 }
 
@@ -82,7 +82,7 @@ impl<T> Clone for GpuDescriptorHandle<T> {
     fn clone(&self) -> Self {
         Self {
             heap: self.heap.clone(),
-            handle: self.handle.clone(),
+            handle: self.handle,
             _t: std::marker::PhantomData,
         }
     }
@@ -128,6 +128,7 @@ pub struct ConstantBufferViewDesc(D3D12_CONSTANT_BUFFER_VIEW_DESC);
 
 impl ConstantBufferViewDesc {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(D3D12_CONSTANT_BUFFER_VIEW_DESC::default())
     }
@@ -1068,6 +1069,12 @@ impl SamplerDesc {
     }
 }
 
+impl Default for SamplerDesc {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct Builder<T, Len = ()> {
     device: ID3D12Device,
     desc: D3D12_DESCRIPTOR_HEAP_DESC,
@@ -1193,6 +1200,7 @@ impl DescriptorHeap<()> {
     }
 }
 
+#[allow(clippy::len_without_is_empty)]
 impl<T> DescriptorHeap<T>
 where
     T: Type,
@@ -1283,6 +1291,7 @@ impl<T> Eq for DescriptorHeap<T> {}
 
 impl DescriptorHeap<CbvSrvUav> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<CbvSrvUav> {
         Builder::new(device.handle())
     }
@@ -1338,6 +1347,7 @@ impl DescriptorHeap<CbvSrvUav> {
 
 impl DescriptorHeap<Rtv> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<Rtv> {
         Builder::new(device.handle())
     }
@@ -1361,6 +1371,7 @@ impl DescriptorHeap<Rtv> {
 
 impl DescriptorHeap<Dsv> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<Dsv> {
         Builder::new(device.handle())
     }
@@ -1384,6 +1395,7 @@ impl DescriptorHeap<Dsv> {
 
 impl DescriptorHeap<Sampler> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<Sampler> {
         Builder::new(device.handle())
     }

@@ -83,7 +83,7 @@ impl Default for SampleDesc {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
 #[repr(transparent)]
 pub struct GpuVirtualAddressRange(pub D3D12_GPU_VIRTUAL_ADDRESS_RANGE);
 
@@ -106,7 +106,7 @@ impl GpuVirtualAddressRange {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
 #[repr(transparent)]
 pub struct GpuVirtualAddressRangeAndStride(pub D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE);
 
@@ -135,7 +135,7 @@ impl GpuVirtualAddressRangeAndStride {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Debug)]
 pub struct GpuVirtualAddress(pub u64);
 
 impl GpuVirtualAddress {
@@ -156,7 +156,7 @@ impl From<u64> for GpuVirtualAddress {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
 #[repr(transparent)]
 pub struct GpuVirtualAddressAndStride(pub D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE);
 
@@ -217,10 +217,23 @@ impl Drop for Handle {
 
 #[inline]
 pub fn align_size(size: u64, align: u64) -> u64 {
-    size + (align - 1) & !(align - 1)
+    (size + (align - 1)) & !(align - 1)
 }
 
 #[inline]
 pub fn align_size_for_constant_buffer(size: u64) -> u64 {
     align_size(size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT as u64)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn align_size_test() {
+        assert!(align_size(1, 256) == 256);
+        assert!(align_size(256, 256) == 256);
+        assert!(align_size(257, 256) == 256 * 2);
+        assert!(align_size(256 * 2 + 1, 256) == 256 * 3);
+    }
 }
