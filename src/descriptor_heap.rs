@@ -133,8 +133,8 @@ impl ConstantBufferViewDesc {
     }
 
     #[inline]
-    pub fn buffer_location(mut self, loc: u64) -> Self {
-        self.0.BufferLocation = loc;
+    pub fn buffer_location(mut self, loc: GpuVirtualAddress) -> Self {
+        self.0.BufferLocation = loc.0;
         self
     }
 
@@ -469,8 +469,8 @@ impl ShaderResourceViewDesc<dimension::TextureCubeArray> {
 
 impl ShaderResourceViewDesc<dimension::RaytracingAccelerationStructure> {
     #[inline]
-    pub fn location(mut self, loc: u64) -> Self {
-        self.desc.Anonymous.RaytracingAccelerationStructure.Location = loc;
+    pub fn location(mut self, loc: GpuVirtualAddress) -> Self {
+        self.desc.Anonymous.RaytracingAccelerationStructure.Location = loc.0;
         self
     }
 }

@@ -26,16 +26,21 @@ impl RaytracingGeometryTrianglesDesc {
     }
 
     #[inline]
-    pub fn index_buffer(mut self, addr: u64, count: u32, format: DXGI_FORMAT) -> Self {
-        self.0.Anonymous.Triangles.IndexBuffer = addr;
+    pub fn index_buffer(
+        mut self,
+        addr: GpuVirtualAddress,
+        count: u32,
+        format: DXGI_FORMAT,
+    ) -> Self {
+        self.0.Anonymous.Triangles.IndexBuffer = addr.0;
         self.0.Anonymous.Triangles.IndexCount = count;
         self.0.Anonymous.Triangles.IndexFormat = format;
         self
     }
 
     #[inline]
-    pub fn transform3x4(mut self, addr: u64) -> Self {
-        self.0.Anonymous.Triangles.Transform3x4 = addr;
+    pub fn transform3x4(mut self, addr: GpuVirtualAddress) -> Self {
+        self.0.Anonymous.Triangles.Transform3x4 = addr.0;
         self
     }
 }
@@ -124,8 +129,8 @@ impl TopLevel {
     }
 
     #[inline]
-    pub fn instance_descs(mut self, descs: u64) -> Self {
-        self.0.Anonymous.InstanceDescs = descs;
+    pub fn instance_descs(mut self, descs: GpuVirtualAddress) -> Self {
+        self.0.Anonymous.InstanceDescs = descs.0;
         self
     }
 }
@@ -261,8 +266,8 @@ impl RaytracingInstanceDesc {
     }
 
     #[inline]
-    pub fn accelration_structure(mut self, addr: u64) -> Self {
-        self.0.AccelerationStructure = addr;
+    pub fn accelration_structure(mut self, addr: GpuVirtualAddress) -> Self {
+        self.0.AccelerationStructure = addr.0;
         self
     }
 }
@@ -285,8 +290,8 @@ impl BuildRaytracingAccelerationStructureDesc {
     }
 
     #[inline]
-    pub fn dest_acceleration_structure_data(mut self, addr: u64) -> Self {
-        self.0.DestAccelerationStructureData = addr;
+    pub fn dest_acceleration_structure_data(mut self, addr: GpuVirtualAddress) -> Self {
+        self.0.DestAccelerationStructureData = addr.0;
         self
     }
 
@@ -300,14 +305,14 @@ impl BuildRaytracingAccelerationStructureDesc {
     }
 
     #[inline]
-    pub fn source_acceleration_structure_data(mut self, addr: u64) -> Self {
-        self.0.SourceAccelerationStructureData = addr;
+    pub fn source_acceleration_structure_data(mut self, addr: GpuVirtualAddress) -> Self {
+        self.0.SourceAccelerationStructureData = addr.0;
         self
     }
 
     #[inline]
-    pub fn scratch_acceleration_structure_data(mut self, addr: u64) -> Self {
-        self.0.ScratchAccelerationStructureData = addr;
+    pub fn scratch_acceleration_structure_data(mut self, addr: GpuVirtualAddress) -> Self {
+        self.0.ScratchAccelerationStructureData = addr.0;
         self
     }
 }

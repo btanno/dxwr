@@ -1,7 +1,7 @@
 use super::*;
 use windows::core::GUID;
-use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Direct3D::*;
+use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::Common::*;
 
 pub trait Feature: Sized {
@@ -24,7 +24,11 @@ fn get_feature<T: Default>(device: &DeviceType, value: D3D12_FEATURE) -> windows
     Ok(tmp)
 }
 
-fn request_feature<T>(device: &DeviceType, value: D3D12_FEATURE, feature: &mut T) -> windows::core::Result<()> {
+fn request_feature<T>(
+    device: &DeviceType,
+    value: D3D12_FEATURE,
+    feature: &mut T,
+) -> windows::core::Result<()> {
     unsafe {
         device.CheckFeatureSupport(
             value,
@@ -57,7 +61,8 @@ pub struct D3D12Options {
 
 impl Feature for D3D12Options {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS)?;
         Ok(Self {
             double_precision_float_shader_ops: tmp.DoublePrecisionFloatShaderOps.into(),
             output_merger_logic_op: tmp.OutputMergerLogicOp.into(),
@@ -72,7 +77,7 @@ impl Feature for D3D12Options {
             standard_swizzle_64kb_supported: tmp.StandardSwizzle64KBSupported.into(),
             cross_node_sharing_tier: tmp.CrossNodeSharingTier,
             cross_adapter_row_major_texture_supported: tmp.CrossAdapterRowMajorTextureSupported.into(),
-            vp_and_rt_array_index_from_any_shader_feeding_rasterizer_supported_without_gs_emulation: 
+            vp_and_rt_array_index_from_any_shader_feeding_rasterizer_supported_without_gs_emulation:
                 tmp.VPAndRTArrayIndexFromAnyShaderFeedingRasterizerSupportedWithoutGSEmulation.into(),
             resource_heap_tier: tmp.ResourceHeapTier,
         })
@@ -134,7 +139,7 @@ impl RequestFeature for FeatureLevels {
         let mut tmp = D3D12_FEATURE_DATA_FEATURE_LEVELS {
             NumFeatureLevels: feature.feature_levels_requested.len() as u32,
             pFeatureLevelsRequested: feature.feature_levels_requested.as_ptr(),
-            MaxSupportedFeatureLevel: Default::default(), 
+            MaxSupportedFeatureLevel: Default::default(),
         };
         request_feature(device, D3D12_FEATURE_FEATURE_LEVELS, &mut tmp)?;
         Ok(Self {
@@ -250,10 +255,11 @@ pub struct GpuVirtualAddressSupport {
 
 impl Feature for GpuVirtualAddressSupport {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT = get_feature(device, D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT)?;
+        let tmp: D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT =
+            get_feature(device, D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT)?;
         Ok(Self {
             max_gpu_virtual_address_bits_per_resource: tmp.MaxGPUVirtualAddressBitsPerResource,
-            max_gpu_virtual_address_bits_per_process: tmp.MaxGPUVirtualAddressBitsPerProcess
+            max_gpu_virtual_address_bits_per_process: tmp.MaxGPUVirtualAddressBitsPerProcess,
         })
     }
 }
@@ -287,7 +293,8 @@ pub struct D3D12Options1 {
 
 impl Feature for D3D12Options1 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS1 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS1)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS1 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS1)?;
         Ok(Self {
             wave_ops: tmp.WaveOps.into(),
             wave_lane_count_min: tmp.WaveLaneCountMin,
@@ -320,7 +327,11 @@ impl RequestFeature for ProtectedResourceSessionSupport {
             NodeIndex: feature.node_index,
             ..Default::default()
         };
-        request_feature(device, D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_SUPPORT, &mut tmp)?;
+        request_feature(
+            device,
+            D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_SUPPORT,
+            &mut tmp,
+        )?;
         Ok(Self {
             node_index: tmp.NodeIndex,
             support: tmp.Support,
@@ -353,7 +364,8 @@ pub struct D3D12Options2 {
 
 impl Feature for D3D12Options2 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS2 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS2)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS2 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS2)?;
         Ok(Self {
             depth_bounds_test_supported: tmp.DepthBoundsTestSupported.into(),
             programmable_sample_positions_tier: tmp.ProgrammableSamplePositionsTier,
@@ -419,7 +431,8 @@ pub struct D3D12Options3 {
 
 impl Feature for D3D12Options3 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS3 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS3)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS3 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS3)?;
         Ok(Self {
             copy_queue_timestamp_queries_supported: tmp.CopyQueueTimestampQueriesSupported.into(),
             casting_fully_typed_format_supported: tmp.CastingFullyTypedFormatSupported.into(),
@@ -437,7 +450,8 @@ pub struct ExistingHeaps {
 
 impl Feature for ExistingHeaps {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_EXISTING_HEAPS = get_feature(device, D3D12_FEATURE_EXISTING_HEAPS)?;
+        let tmp: D3D12_FEATURE_DATA_EXISTING_HEAPS =
+            get_feature(device, D3D12_FEATURE_EXISTING_HEAPS)?;
         Ok(Self {
             supported: tmp.Supported.into(),
         })
@@ -453,7 +467,8 @@ pub struct D3D12Options4 {
 
 impl Feature for D3D12Options4 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS4 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS4)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS4 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS4)?;
         Ok(Self {
             msaa_64kb_aligned_texture_supported: tmp.MSAA64KBAlignedTextureSupported.into(),
             shared_resource_compatibility_tier: tmp.SharedResourceCompatibilityTier,
@@ -517,7 +532,8 @@ pub struct D3D12Options5 {
 
 impl Feature for D3D12Options5 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS5 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS5)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS5 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS5)?;
         Ok(Self {
             srv_only_tiled_resource_tier3: tmp.SRVOnlyTiledResourceTier3.into(),
             render_pass_tier: tmp.RenderPassesTier,
@@ -553,10 +569,13 @@ pub struct D3D12Options6 {
 
 impl Feature for D3D12Options6 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS6 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS6)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS6 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS6)?;
         Ok(Self {
             additional_shading_rates_supported: tmp.AdditionalShadingRatesSupported.into(),
-            per_primitive_shading_rate_supported_with_viewport_indexing: tmp.PerPrimitiveShadingRateSupportedWithViewportIndexing.into(),
+            per_primitive_shading_rate_supported_with_viewport_indexing: tmp
+                .PerPrimitiveShadingRateSupportedWithViewportIndexing
+                .into(),
             variable_shading_rate_tier: tmp.VariableShadingRateTier,
             shading_rate_image_tile_size: tmp.ShadingRateImageTileSize,
             background_processing_supported: tmp.BackgroundProcessingSupported.into(),
@@ -572,7 +591,8 @@ pub struct D3D12Options7 {
 
 impl Feature for D3D12Options7 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS7 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS7)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS7 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS7)?;
         Ok(Self {
             mesh_shader_tier: tmp.MeshShaderTier,
             sampler_feedback_tier: tmp.SamplerFeedbackTier,
@@ -601,9 +621,13 @@ impl RequestFeature for ProtectedResourceSessionTypeCount {
             NodeIndex: feature.node_index,
             Count: 0,
         };
-        request_feature(device, D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPE_COUNT, &mut tmp)?;
+        request_feature(
+            device,
+            D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPE_COUNT,
+            &mut tmp,
+        )?;
         Ok(Self {
-            node_index:tmp.NodeIndex,
+            node_index: tmp.NodeIndex,
             count: tmp.Count,
         })
     }
@@ -626,7 +650,11 @@ impl ProtectedResourceSessionTypes {
 
 impl RequestFeature for ProtectedResourceSessionTypes {
     fn check(device: &DeviceType, feature: Self) -> windows::core::Result<Self> {
-        let count = RequestFeature::check(device, ProtectedResourceSessionTypeCount::new(feature.node_index))?.count as usize;
+        let count = RequestFeature::check(
+            device,
+            ProtectedResourceSessionTypeCount::new(feature.node_index),
+        )?
+        .count as usize;
         let mut types = Vec::with_capacity(count);
         unsafe {
             types.set_len(count);
@@ -636,7 +664,11 @@ impl RequestFeature for ProtectedResourceSessionTypes {
             Count: count as u32,
             pTypes: types.as_mut_ptr(),
         };
-        request_feature(device, D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPES, &mut tmp)?;
+        request_feature(
+            device,
+            D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPES,
+            &mut tmp,
+        )?;
         Ok(Self {
             node_index: tmp.NodeIndex,
             types,
@@ -651,7 +683,8 @@ pub struct D3D12Options8 {
 
 impl Feature for D3D12Options8 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS8 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS8)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS8 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS8)?;
         Ok(Self {
             unaligned_block_textures_supported: tmp.UnalignedBlockTexturesSupported.into(),
         })
@@ -670,13 +703,20 @@ pub struct D3D12Options9 {
 
 impl Feature for D3D12Options9 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS9 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS9)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS9 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS9)?;
         Ok(Self {
             mesh_shader_pipeline_stats_supported: tmp.MeshShaderPipelineStatsSupported.into(),
-            mesh_shader_supports_full_range_render_target_array_index: tmp.MeshShaderSupportsFullRangeRenderTargetArrayIndex.into(),
-            atomic_int64_on_typed_resource_supported: tmp.AtomicInt64OnTypedResourceSupported.into(),
+            mesh_shader_supports_full_range_render_target_array_index: tmp
+                .MeshShaderSupportsFullRangeRenderTargetArrayIndex
+                .into(),
+            atomic_int64_on_typed_resource_supported: tmp
+                .AtomicInt64OnTypedResourceSupported
+                .into(),
             atomic_int64_on_group_shared_supported: tmp.AtomicInt64OnGroupSharedSupported.into(),
-            derivatives_in_mesh_and_amplification_shaders_supported: tmp.DerivativesInMeshAndAmplificationShadersSupported.into(),
+            derivatives_in_mesh_and_amplification_shaders_supported: tmp
+                .DerivativesInMeshAndAmplificationShadersSupported
+                .into(),
             wave_mma_tier: tmp.WaveMMATier,
         })
     }
@@ -690,10 +730,15 @@ pub struct D3D12Options10 {
 
 impl Feature for D3D12Options10 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS10 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS10)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS10 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS10)?;
         Ok(Self {
-            variable_rate_shading_sum_combiner_supported: tmp.VariableRateShadingSumCombinerSupported.into(),
-            mesh_shader_per_primitive_shading_rate_supported: tmp.MeshShaderPerPrimitiveShadingRateSupported.into(),
+            variable_rate_shading_sum_combiner_supported: tmp
+                .VariableRateShadingSumCombinerSupported
+                .into(),
+            mesh_shader_per_primitive_shading_rate_supported: tmp
+                .MeshShaderPerPrimitiveShadingRateSupported
+                .into(),
         })
     }
 }
@@ -705,9 +750,12 @@ pub struct D3D12Options11 {
 
 impl Feature for D3D12Options11 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS11 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS11)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS11 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS11)?;
         Ok(Self {
-            atomic_int64_on_descriptor_heap_resource_supported: tmp.AtomicInt64OnDescriptorHeapResourceSupported.into(),
+            atomic_int64_on_descriptor_heap_resource_supported: tmp
+                .AtomicInt64OnDescriptorHeapResourceSupported
+                .into(),
         })
     }
 }
@@ -721,9 +769,11 @@ pub struct D3D12Options12 {
 
 impl Feature for D3D12Options12 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS12 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS12)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS12 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS12)?;
         Ok(Self {
-            ms_primitives_pipeline_statistic_includes_culled_primitives: tmp.MSPrimitivesPipelineStatisticIncludesCulledPrimitives,
+            ms_primitives_pipeline_statistic_includes_culled_primitives: tmp
+                .MSPrimitivesPipelineStatisticIncludesCulledPrimitives,
             enhanced_barriers_supported: tmp.EnhancedBarriersSupported.into(),
             relaxed_format_casting_supported: tmp.RelaxedFormatCastingSupported.into(),
         })
@@ -742,13 +792,24 @@ pub struct D3D12Options13 {
 
 impl Feature for D3D12Options13 {
     fn check(device: &DeviceType) -> windows::core::Result<Self> {
-        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS13 = get_feature(device, D3D12_FEATURE_D3D12_OPTIONS13)?;
+        let tmp: D3D12_FEATURE_DATA_D3D12_OPTIONS13 =
+            get_feature(device, D3D12_FEATURE_D3D12_OPTIONS13)?;
         Ok(Self {
-            unrestricted_buffer_texture_copy_pitch_supported: tmp.UnrestrictedBufferTextureCopyPitchSupported.into(),
-            unrestricted_vertex_element_alignment_supported: tmp.UnrestrictedVertexElementAlignmentSupported.into(),
-            inverted_viewport_height_flips_y_supported: tmp.InvertedViewportHeightFlipsYSupported.into(),
-            inverted_viewport_depth_flips_z_supported: tmp.InvertedViewportDepthFlipsZSupported.into(),
-            texture_copy_between_dimensions_supported: tmp.TextureCopyBetweenDimensionsSupported.into(),
+            unrestricted_buffer_texture_copy_pitch_supported: tmp
+                .UnrestrictedBufferTextureCopyPitchSupported
+                .into(),
+            unrestricted_vertex_element_alignment_supported: tmp
+                .UnrestrictedVertexElementAlignmentSupported
+                .into(),
+            inverted_viewport_height_flips_y_supported: tmp
+                .InvertedViewportHeightFlipsYSupported
+                .into(),
+            inverted_viewport_depth_flips_z_supported: tmp
+                .InvertedViewportDepthFlipsZSupported
+                .into(),
+            texture_copy_between_dimensions_supported: tmp
+                .TextureCopyBetweenDimensionsSupported
+                .into(),
             alpha_blend_factor_supported: tmp.AlphaBlendFactorSupported.into(),
         })
     }
@@ -763,7 +824,8 @@ mod tests {
         crate::Device::new()
             .adapter(&adapter)
             .min_feature_level(D3D_FEATURE_LEVEL_12_1)
-            .build().unwrap()
+            .build()
+            .unwrap()
     }
 
     #[test]
@@ -777,29 +839,40 @@ mod tests {
         let device = create_device();
         device.request_feature(Architecture::new(0)).unwrap();
     }
-    
+
     #[test]
     fn feature_levels() {
         let device = create_device();
-        device.request_feature(FeatureLevels::new(&[D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_12_1])).unwrap();
+        device
+            .request_feature(FeatureLevels::new(&[
+                D3D_FEATURE_LEVEL_12_0,
+                D3D_FEATURE_LEVEL_12_1,
+            ]))
+            .unwrap();
     }
 
     #[test]
     fn format_support() {
         let device = create_device();
-        device.request_feature(FormatSupport::new(DXGI_FORMAT_R32_FLOAT)).unwrap();
+        device
+            .request_feature(FormatSupport::new(DXGI_FORMAT_R32_FLOAT))
+            .unwrap();
     }
 
     #[test]
     fn multisample_quality_levels() {
         let device = create_device();
-        device.request_feature(MultisampleQualityLevels::new(DXGI_FORMAT_R8G8B8A8_UNORM, 1)).unwrap();
+        device
+            .request_feature(MultisampleQualityLevels::new(DXGI_FORMAT_R8G8B8A8_UNORM, 1))
+            .unwrap();
     }
 
     #[test]
     fn format_info() {
         let device = create_device();
-        device.request_feature(FormatInfo::new(DXGI_FORMAT_R8G8B8A8_UNORM)).unwrap();
+        device
+            .request_feature(FormatInfo::new(DXGI_FORMAT_R8G8B8A8_UNORM))
+            .unwrap();
     }
 
     #[test]
@@ -823,7 +896,9 @@ mod tests {
     #[test]
     fn protected_resource_session_support() {
         let device = create_device();
-        device.request_feature(ProtectedResourceSessionSupport::new(0)).unwrap();
+        device
+            .request_feature(ProtectedResourceSessionSupport::new(0))
+            .unwrap();
     }
 
     #[test]
@@ -847,7 +922,9 @@ mod tests {
     #[test]
     fn command_queue_priority() {
         let device = create_device();
-        device.request_feature(CommandQueuePriority::new(D3D12_COMMAND_LIST_TYPE_DIRECT, 0)).unwrap();
+        device
+            .request_feature(CommandQueuePriority::new(D3D12_COMMAND_LIST_TYPE_DIRECT, 0))
+            .unwrap();
     }
 
     #[test]
@@ -903,11 +980,13 @@ mod tests {
         let device = create_device();
         device.check_feature::<D3D12Options7>().unwrap();
     }
-    
+
     #[test]
     fn protected_resource_session_types() {
         let device = create_device();
-        device.request_feature(ProtectedResourceSessionTypes::new(0)).unwrap();
+        device
+            .request_feature(ProtectedResourceSessionTypes::new(0))
+            .unwrap();
     }
 
     #[test]

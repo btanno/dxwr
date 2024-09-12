@@ -511,8 +511,8 @@ impl Resource {
     }
 
     #[inline]
-    pub fn get_gpu_virtual_address(&self) -> u64 {
-        unsafe { self.handle.GetGPUVirtualAddress() }
+    pub fn get_gpu_virtual_address(&self) -> GpuVirtualAddress {
+        unsafe { GpuVirtualAddress(self.handle.GetGPUVirtualAddress()) }
     }
 
     #[inline]
@@ -524,7 +524,7 @@ impl Resource {
     pub fn name(&self) -> Option<&str> {
         self.name.as_ref().map(|n| n.as_str())
     }
-    
+
     #[inline]
     pub fn set_name(&mut self, name: impl AsRef<str>) {
         self.name = Some(Name::new(self.handle(), name));
