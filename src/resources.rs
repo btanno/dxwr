@@ -511,8 +511,8 @@ impl Resource {
     }
 
     #[inline]
-    pub fn get_gpu_virtual_address(&self) -> u64 {
-        unsafe { self.handle.GetGPUVirtualAddress() }
+    pub fn get_gpu_virtual_address(&self) -> GpuVirtualAddress {
+        unsafe { GpuVirtualAddress(self.handle.GetGPUVirtualAddress()) }
     }
 
     #[inline]

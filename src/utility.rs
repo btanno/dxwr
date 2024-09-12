@@ -36,7 +36,7 @@ impl Drop for EventHandle {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub(crate) struct Name(Arc<String>);
 
 impl Name {
@@ -83,7 +83,7 @@ impl Default for SampleDesc {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 #[repr(transparent)]
 pub struct GpuVirtualAddressRange(pub D3D12_GPU_VIRTUAL_ADDRESS_RANGE);
 
@@ -94,8 +94,8 @@ impl GpuVirtualAddressRange {
     }
 
     #[inline]
-    pub fn start_address(mut self, addr: u64) -> Self {
-        self.0.StartAddress = addr;
+    pub fn start_address(mut self, addr: GpuVirtualAddress) -> Self {
+        self.0.StartAddress = addr.0;
         self
     }
 
@@ -106,7 +106,7 @@ impl GpuVirtualAddressRange {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 #[repr(transparent)]
 pub struct GpuVirtualAddressRangeAndStride(pub D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE);
 
@@ -117,8 +117,8 @@ impl GpuVirtualAddressRangeAndStride {
     }
 
     #[inline]
-    pub fn start_address(mut self, addr: u64) -> Self {
-        self.0.StartAddress = addr;
+    pub fn start_address(mut self, addr: GpuVirtualAddress) -> Self {
+        self.0.StartAddress = addr.0;
         self
     }
 
@@ -135,10 +135,28 @@ impl GpuVirtualAddressRangeAndStride {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct GpuVirtualAddress(pub u64);
 
-#[derive(Clone, Copy, Debug)]
+impl GpuVirtualAddress {
+    #[inline]
+    pub fn offset(self, v: i64) -> Self {
+        if v < 0 {
+            Self(self.0 - (-v as u64))
+        } else {
+            Self(self.0 + v as u64)
+        }
+    }
+}
+
+impl From<u64> for GpuVirtualAddress {
+    #[inline]
+    fn from(value: u64) -> Self {
+        Self(value)
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 #[repr(transparent)]
 pub struct GpuVirtualAddressAndStride(pub D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE);
 
@@ -149,8 +167,8 @@ impl GpuVirtualAddressAndStride {
     }
 
     #[inline]
-    pub fn start_address(mut self, addr: u64) -> Self {
-        self.0.StartAddress = addr;
+    pub fn start_address(mut self, addr: GpuVirtualAddress) -> Self {
+        self.0.StartAddress = addr.0;
         self
     }
 

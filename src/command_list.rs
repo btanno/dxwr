@@ -19,8 +19,8 @@ impl VertexBufferView {
     }
 
     #[inline]
-    pub fn buffer_location(mut self, loc: u64) -> Self {
-        self.view.BufferLocation = loc;
+    pub fn buffer_location(mut self, loc: GpuVirtualAddress) -> Self {
+        self.view.BufferLocation = loc.0;
         self
     }
 
@@ -52,8 +52,8 @@ impl IndexBufferView {
     }
 
     #[inline]
-    pub fn buffer_location(mut self, loc: u64) -> Self {
-        self.view.BufferLocation = loc;
+    pub fn buffer_location(mut self, loc: GpuVirtualAddress) -> Self {
+        self.view.BufferLocation = loc.0;
         self
     }
 
@@ -173,8 +173,8 @@ impl StreamOutputBufferView {
     }
 
     #[inline]
-    pub fn buffer_location(mut self, loc: u64) -> Self {
-        self.0.BufferLocation = loc;
+    pub fn buffer_location(mut self, loc: GpuVirtualAddress) -> Self {
+        self.0.BufferLocation = loc.0;
         self
     }
 
@@ -745,18 +745,26 @@ impl<'a, T> Commands<'a, T> {
     }
 
     #[inline]
-    pub fn set_graphics_root_constant_buffer_view(&self, root_parameter_index: u32, location: u64) {
+    pub fn set_graphics_root_constant_buffer_view(
+        &self,
+        root_parameter_index: u32,
+        location: GpuVirtualAddress,
+    ) {
         unsafe {
             self.cmd_list
-                .SetGraphicsRootConstantBufferView(root_parameter_index, location);
+                .SetGraphicsRootConstantBufferView(root_parameter_index, location.0);
         }
     }
 
     #[inline]
-    pub fn set_graphics_root_shader_resource_view(&self, root_parameter_index: u32, location: u64) {
+    pub fn set_graphics_root_shader_resource_view(
+        &self,
+        root_parameter_index: u32,
+        location: GpuVirtualAddress,
+    ) {
         unsafe {
             self.cmd_list
-                .SetGraphicsRootShaderResourceView(root_parameter_index, location);
+                .SetGraphicsRootShaderResourceView(root_parameter_index, location.0);
         }
     }
 
@@ -764,11 +772,11 @@ impl<'a, T> Commands<'a, T> {
     pub fn set_graphics_root_unordered_access_view(
         &self,
         root_parameter_index: u32,
-        location: u64,
+        location: GpuVirtualAddress,
     ) {
         unsafe {
             self.cmd_list
-                .SetGraphicsRootUnorderedAccessView(root_parameter_index, location);
+                .SetGraphicsRootUnorderedAccessView(root_parameter_index, location.0);
         }
     }
 
@@ -809,26 +817,38 @@ impl<'a, T> Commands<'a, T> {
     }
 
     #[inline]
-    pub fn set_compute_root_constant_buffer_view(&self, root_parameter_index: u32, location: u64) {
+    pub fn set_compute_root_constant_buffer_view(
+        &self,
+        root_parameter_index: u32,
+        location: GpuVirtualAddress,
+    ) {
         unsafe {
             self.cmd_list
-                .SetComputeRootConstantBufferView(root_parameter_index, location);
+                .SetComputeRootConstantBufferView(root_parameter_index, location.0);
         }
     }
 
     #[inline]
-    pub fn set_compute_root_shader_resource_view(&self, root_parameter_index: u32, location: u64) {
+    pub fn set_compute_root_shader_resource_view(
+        &self,
+        root_parameter_index: u32,
+        location: GpuVirtualAddress,
+    ) {
         unsafe {
             self.cmd_list
-                .SetComputeRootShaderResourceView(root_parameter_index, location);
+                .SetComputeRootShaderResourceView(root_parameter_index, location.0);
         }
     }
 
     #[inline]
-    pub fn set_compute_root_unordered_access_view(&self, root_parameter_index: u32, location: u64) {
+    pub fn set_compute_root_unordered_access_view(
+        &self,
+        root_parameter_index: u32,
+        location: GpuVirtualAddress,
+    ) {
         unsafe {
             self.cmd_list
-                .SetComputeRootUnorderedAccessView(root_parameter_index, location);
+                .SetComputeRootUnorderedAccessView(root_parameter_index, location.0);
         }
     }
 
@@ -1015,7 +1035,7 @@ where
     #[inline]
     pub fn set_name(&mut self, name: impl AsRef<str>) {
         self.name = Some(Name::new(self.handle(), name));
-    }    
+    }
 }
 
 impl GraphicsCommandList<command_list_type::Direct> {
