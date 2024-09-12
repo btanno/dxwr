@@ -805,7 +805,7 @@ impl<'a> Vs<'a> {
 
 impl<'a, T> From<T> for Vs<'a>
 where
-    T: Into<ShaderBytecode<'a>>
+    T: Into<ShaderBytecode<'a>>,
 {
     #[inline]
     fn from(value: T) -> Self {
@@ -825,7 +825,7 @@ impl<'a> Ps<'a> {
 
 impl<'a, T> From<T> for Ps<'a>
 where
-    T: Into<ShaderBytecode<'a>>
+    T: Into<ShaderBytecode<'a>>,
 {
     #[inline]
     fn from(value: T) -> Self {
@@ -845,7 +845,7 @@ impl<'a> Ds<'a> {
 
 impl<'a, T> From<T> for Ds<'a>
 where
-    T: Into<ShaderBytecode<'a>>
+    T: Into<ShaderBytecode<'a>>,
 {
     #[inline]
     fn from(value: T) -> Self {
@@ -865,7 +865,7 @@ impl<'a> Hs<'a> {
 
 impl<'a, T> From<T> for Hs<'a>
 where
-    T: Into<ShaderBytecode<'a>>
+    T: Into<ShaderBytecode<'a>>,
 {
     #[inline]
     fn from(value: T) -> Self {
@@ -885,7 +885,7 @@ impl<'a> Gs<'a> {
 
 impl<'a, T> From<T> for Gs<'a>
 where
-    T: Into<ShaderBytecode<'a>>
+    T: Into<ShaderBytecode<'a>>,
 {
     #[inline]
     fn from(value: T) -> Self {
@@ -905,7 +905,7 @@ impl<'a> Ms<'a> {
 
 impl<'a, T> From<T> for Ms<'a>
 where
-    T: Into<ShaderBytecode<'a>>
+    T: Into<ShaderBytecode<'a>>,
 {
     #[inline]
     fn from(value: T) -> Self {
@@ -925,7 +925,7 @@ impl<'a> As<'a> {
 
 impl<'a, T> From<T> for As<'a>
 where
-    T: Into<ShaderBytecode<'a>>
+    T: Into<ShaderBytecode<'a>>,
 {
     #[inline]
     fn from(value: T) -> Self {

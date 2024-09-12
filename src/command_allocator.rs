@@ -53,9 +53,9 @@ pub struct CommandAllocator<T = ()> {
 
 impl CommandAllocator<()> {
     #[inline]
-    pub fn new<U>(device:&Device) -> Builder<U>
+    pub fn new<U>(device: &Device) -> Builder<U>
     where
-        U: CommandListType
+        U: CommandListType,
     {
         Builder::new(device.handle())
     }
@@ -118,7 +118,7 @@ where
     #[inline]
     pub fn set_name(&mut self, name: impl AsRef<str>) {
         self.name = Some(Name::new(self.handle(), name));
-    }    
+    }
 }
 
 impl CommandAllocator<command_list_type::Direct> {

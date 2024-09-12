@@ -26,7 +26,12 @@ impl RaytracingGeometryTrianglesDesc {
     }
 
     #[inline]
-    pub fn index_buffer(mut self, addr: GpuVirtualAddress, count: u32, format: DXGI_FORMAT) -> Self {
+    pub fn index_buffer(
+        mut self,
+        addr: GpuVirtualAddress,
+        count: u32,
+        format: DXGI_FORMAT,
+    ) -> Self {
         self.0.Anonymous.Triangles.IndexBuffer = addr.0;
         self.0.Anonymous.Triangles.IndexCount = count;
         self.0.Anonymous.Triangles.IndexFormat = format;
