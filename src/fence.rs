@@ -58,6 +58,7 @@ pub struct Fence {
 
 impl Fence {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder {
         Builder::new(device.handle())
     }

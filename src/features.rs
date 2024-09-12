@@ -655,10 +655,7 @@ impl RequestFeature for ProtectedResourceSessionTypes {
             ProtectedResourceSessionTypeCount::new(feature.node_index),
         )?
         .count as usize;
-        let mut types = Vec::with_capacity(count);
-        unsafe {
-            types.set_len(count);
-        }
+        let mut types = vec![GUID::default(); count];
         let mut tmp = D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_TYPES {
             NodeIndex: feature.node_index,
             Count: count as u32,

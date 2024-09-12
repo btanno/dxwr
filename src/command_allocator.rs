@@ -53,6 +53,7 @@ pub struct CommandAllocator<T = ()> {
 
 impl CommandAllocator<()> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<U>(device: &Device) -> Builder<U>
     where
         U: CommandListType,
@@ -123,6 +124,7 @@ where
 
 impl CommandAllocator<command_list_type::Direct> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::Direct> {
         Builder::new(device.handle())
     }
@@ -130,6 +132,7 @@ impl CommandAllocator<command_list_type::Direct> {
 
 impl CommandAllocator<command_list_type::Compute> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::Compute> {
         Builder::new(device.handle())
     }
@@ -137,6 +140,7 @@ impl CommandAllocator<command_list_type::Compute> {
 
 impl CommandAllocator<command_list_type::Copy> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::Copy> {
         Builder::new(device.handle())
     }
@@ -144,6 +148,7 @@ impl CommandAllocator<command_list_type::Copy> {
 
 impl CommandAllocator<command_list_type::Bundle> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::Bundle> {
         Builder::new(device.handle())
     }
@@ -151,6 +156,7 @@ impl CommandAllocator<command_list_type::Bundle> {
 
 impl CommandAllocator<command_list_type::VideoDecode> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::VideoDecode> {
         Builder::new(device.handle())
     }
@@ -158,6 +164,7 @@ impl CommandAllocator<command_list_type::VideoDecode> {
 
 impl CommandAllocator<command_list_type::VideoEncode> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::VideoEncode> {
         Builder::new(device.handle())
     }
@@ -165,6 +172,7 @@ impl CommandAllocator<command_list_type::VideoEncode> {
 
 impl CommandAllocator<command_list_type::VideoProcess> {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder<command_list_type::VideoProcess> {
         Builder::new(device.handle())
     }

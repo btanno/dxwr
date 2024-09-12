@@ -285,6 +285,7 @@ pub struct BuildRaytracingAccelerationStructureDesc(
 
 impl BuildRaytracingAccelerationStructureDesc {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC::default())
     }
@@ -300,7 +301,7 @@ impl BuildRaytracingAccelerationStructureDesc {
     where
         T: BuildRaytracingAccelerationStructureInputsType,
     {
-        self.0.Inputs = inputs.get().clone();
+        self.0.Inputs = *inputs.get();
         self
     }
 

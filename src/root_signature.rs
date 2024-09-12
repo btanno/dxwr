@@ -185,7 +185,7 @@ impl RootParameter<root_parameter_type::DescriptorTable> {
     ) -> RootParameter<root_parameter_type::DescriptorTable> {
         let ranges = ranges
             .into_iter()
-            .map(|range| range.0.clone())
+            .map(|range| range.0)
             .collect::<Vec<D3D12_DESCRIPTOR_RANGE>>();
         RootParameter {
             param: D3D12_ROOT_PARAMETER {
@@ -194,7 +194,7 @@ impl RootParameter<root_parameter_type::DescriptorTable> {
                 Anonymous: D3D12_ROOT_PARAMETER_0 {
                     DescriptorTable: D3D12_ROOT_DESCRIPTOR_TABLE {
                         NumDescriptorRanges: ranges.len() as u32,
-                        pDescriptorRanges: ranges.as_ptr() as *const D3D12_DESCRIPTOR_RANGE,
+                        pDescriptorRanges: ranges.as_ptr(),
                     },
                 },
             },
@@ -385,6 +385,12 @@ impl StaticSamplerDesc {
     }
 }
 
+impl Default for StaticSamplerDesc {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Clone)]
 pub struct RootSignatureDesc<'params, 'samplers> {
     params: Option<&'params [RootParameter<()>]>,
@@ -394,6 +400,7 @@ pub struct RootSignatureDesc<'params, 'samplers> {
 
 impl<'params, 'samplers> RootSignatureDesc<'params, 'samplers> {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             params: None,
@@ -469,13 +476,13 @@ impl Builder {
         let parameters = desc
             .params
             .as_ref()
-            .map(|params| params.iter().map(|p| p.param.clone()).collect::<Vec<_>>())
-            .unwrap_or_else(|| vec![]);
+            .map(|params| params.iter().map(|p| p.param).collect::<Vec<_>>())
+            .unwrap_or_default();
         let samplers = desc
             .samplers
             .as_ref()
             .map(|samplers| samplers.to_vec())
-            .unwrap_or_else(|| vec![]);
+            .unwrap_or_default();
         let desc = D3D12_ROOT_SIGNATURE_DESC {
             NumParameters: parameters.len() as u32,
             pParameters: parameters.as_ptr(),
@@ -508,6 +515,7 @@ pub struct RootSignature {
 
 impl RootSignature {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(device: &Device) -> Builder {
         Builder::new(device.handle())
     }

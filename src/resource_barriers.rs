@@ -11,6 +11,7 @@ pub struct TransitionBarrier(D3D12_RESOURCE_BARRIER);
 
 impl TransitionBarrier {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(D3D12_RESOURCE_BARRIER {
             Type: D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
@@ -109,6 +110,7 @@ pub struct AliasingBarrier(D3D12_RESOURCE_BARRIER);
 
 impl AliasingBarrier {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(D3D12_RESOURCE_BARRIER {
             Type: D3D12_RESOURCE_BARRIER_TYPE_ALIASING,
@@ -202,6 +204,7 @@ pub struct UavBarrier(D3D12_RESOURCE_BARRIER);
 
 impl UavBarrier {
     #[inline]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(D3D12_RESOURCE_BARRIER {
             Type: D3D12_RESOURCE_BARRIER_TYPE_UAV,

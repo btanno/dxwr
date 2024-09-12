@@ -118,6 +118,7 @@ pub struct Device {
 
 impl Device {
     #[inline]
+    #[allow(clippy::new_ret_no_self)]
     pub fn new() -> Builder {
         Builder::new()
     }
@@ -151,6 +152,7 @@ impl Device {
     }
 
     #[inline]
+    #[allow(clippy::too_many_arguments)]
     pub fn get_copyable_footprints<T>(
         &self,
         resource_desc: &ResourceDesc<T>,
