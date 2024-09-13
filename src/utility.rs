@@ -7,6 +7,45 @@ use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::{Common::*, *};
 use windows::Win32::System::Threading::{CreateEventW, WaitForSingleObject, INFINITE};
 
+#[derive(Clone, Copy, Debug)]
+#[repr(transparent)]
+pub struct Rect(windows::Win32::Foundation::RECT);
+
+impl Rect {
+    #[inline]
+    pub fn new() -> Self {
+        Self(Default::default())
+    }
+
+    #[inline]
+    pub fn left(mut self, v: i32) -> Self {
+        self.0.left = v;
+        self
+    }
+
+    #[inline]
+    pub fn top(mut self, v: i32) -> Self {
+        self.0.top = v;
+        self
+    }
+
+    #[inline]
+    pub fn right(mut self, v: i32) -> Self {
+        self.0.right = v;
+        self
+    }
+
+    #[inline]
+    pub fn bottom(mut self, v: i32) -> Self {
+        self.0.bottom = v;
+        self
+    }
+}
+
+pub(crate) fn as_rect_slice(src: &[Rect]) -> &[windows::Win32::Foundation::RECT] {
+    unsafe { std::slice::from_raw_parts(src.as_ptr() as *const _, src.len()) }
+}
+
 pub(crate) struct EventHandle(HANDLE);
 
 impl EventHandle {

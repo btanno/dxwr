@@ -32,8 +32,6 @@ pub mod dxgi {
     pub use windows::Win32::Graphics::Dxgi::{Common::*, *};
 }
 
-pub type Rect = windows::Win32::Foundation::RECT;
-
 pub use adapter::{enum_adapters, enum_warp_adapter, Adapter, AdapterId, AdapterMemoryInfo};
 pub use command_allocator::{
     BundleCommandAllocator, CommandAllocator, ComputeCommandAllocator, CopyCommandAllocator,
@@ -46,7 +44,7 @@ pub use command_list::{
     DirectGraphicsCommandList, DiscardRegion, DispatchRaysDesc, GraphicsCommandList,
     IndexBufferView, TextureCopyLocation, VertexBufferView, VideoDecodeCommands,
     VideoDecodeGraphicsCommandList, VideoEncodeCommands, VideoEncodeGraphicsCommandList,
-    VideoProcessCommands, VideoProcessGraphicsCommandList,
+    VideoProcessCommands, VideoProcessGraphicsCommandList, Viewport,
 };
 pub use command_queue::{
     CommandQueue, ComputeCommandQueue, CopyCommandQueue, DirectCommandQueue,

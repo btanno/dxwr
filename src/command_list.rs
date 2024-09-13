@@ -6,6 +6,62 @@ use windows::Win32::Graphics::{Direct3D::*, Direct3D12::*, Dxgi::Common::DXGI_FO
 
 #[derive(Clone, Debug)]
 #[repr(transparent)]
+pub struct Viewport(D3D12_VIEWPORT);
+
+impl Viewport {
+    #[inline]
+    pub fn new() -> Self {
+        Self(D3D12_VIEWPORT {
+            MaxDepth: 1.0,
+            ..Default::default()
+        })
+    }
+
+    #[inline]
+    pub fn top_left_x(mut self, x: f32) -> Self {
+        self.0.TopLeftX = x;
+        self
+    }
+
+    #[inline]
+    pub fn top_left_y(mut self, y: f32) -> Self {
+        self.0.TopLeftY = y;
+        self
+    }
+
+    #[inline]
+    pub fn width(mut self, width: f32) -> Self {
+        self.0.Width = width;
+        self
+    }
+
+    #[inline]
+    pub fn height(mut self, height: f32) -> Self {
+        self.0.Height = height;
+        self
+    }
+
+    #[inline]
+    pub fn min_depth(mut self, d: f32) -> Self {
+        self.0.MinDepth = d;
+        self
+    }
+
+    #[inline]
+    pub fn max_depth(mut self, d: f32) -> Self {
+        self.0.MaxDepth = d;
+        self
+    }
+}
+
+impl Default for Viewport {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(Clone, Debug)]
+#[repr(transparent)]
 pub struct VertexBufferView {
     view: D3D12_VERTEX_BUFFER_VIEW,
 }
@@ -89,6 +145,7 @@ impl<'a> DiscardRegion<'a> {
 
     #[inline]
     pub fn rects(self, rects: &[Rect]) -> DiscardRegion {
+        let rects = as_rect_slice(rects);
         DiscardRegion {
             region: D3D12_DISCARD_REGION {
                 NumRects: rects.len() as u32,
@@ -222,7 +279,7 @@ impl ClearUnorderedAccessView for f32 {
                 view_cpu_handle.handle(),
                 resource.handle(),
                 values,
-                rects,
+                as_rect_slice(rects),
             );
         }
     }
@@ -243,7 +300,7 @@ impl ClearUnorderedAccessView for u32 {
                 view_cpu_handle.handle(),
                 resource.handle(),
                 values,
-                rects,
+                as_rect_slice(rects),
             );
         }
     }
@@ -401,7 +458,7 @@ impl<'a, T> Commands<'a, T> {
                 D3D12_CLEAR_FLAGS(flags),
                 depth.unwrap_or(0.0),
                 stencil.unwrap_or(0),
-                rects.unwrap_or(&[]),
+                rects.map(|rects| as_rect_slice(rects)).unwrap_or(&[]),
             );
         }
     }
@@ -414,8 +471,11 @@ impl<'a, T> Commands<'a, T> {
         rects: Option<&[Rect]>,
     ) {
         unsafe {
-            self.cmd_list
-                .ClearRenderTargetView(rtv.handle(), color, rects);
+            self.cmd_list.ClearRenderTargetView(
+                rtv.handle(),
+                color,
+                rects.map(|rects| as_rect_slice(rects)),
+            );
         }
     }
 
@@ -668,13 +728,21 @@ impl<'a, T> Commands<'a, T> {
     #[inline]
     pub fn rs_set_scissor_rects(&self, rects: &[Rect]) {
         unsafe {
+            let rects = std::slice::from_raw_parts(
+                rects.as_ptr() as *const windows::Win32::Foundation::RECT,
+                rects.len(),
+            );
             self.cmd_list.RSSetScissorRects(rects);
         }
     }
 
     #[inline]
-    pub fn rs_set_viewports(&self, viewports: &[D3D12_VIEWPORT]) {
+    pub fn rs_set_viewports(&self, viewports: &[Viewport]) {
         unsafe {
+            let viewports = std::slice::from_raw_parts(
+                viewports.as_ptr() as *const D3D12_VIEWPORT,
+                viewports.len(),
+            );
             self.cmd_list.RSSetViewports(viewports);
         }
     }
