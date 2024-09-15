@@ -6,6 +6,8 @@ use windows::Win32::Graphics::Direct3D::*;
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT;
 
+pub type DeviceType = ID3D12Device9;
+
 pub struct Builder<Level = ()> {
     adapter: Option<Adapter>,
     min_feature_level: Level,
@@ -52,8 +54,8 @@ impl Builder<D3D_FEATURE_LEVEL> {
     #[inline]
     pub fn build(self) -> windows::core::Result<Device> {
         unsafe {
-            let handle: ID3D12Device8 = {
-                let mut p: Option<ID3D12Device8> = None;
+            let handle: DeviceType = {
+                let mut p: Option<DeviceType> = None;
                 let adapter: Option<IUnknown> = self.adapter.map(|a| a.handle().clone().into());
                 D3D12CreateDevice(adapter.as_ref(), self.min_feature_level, &mut p)
                     .map(|_| p.unwrap())?
@@ -108,7 +110,6 @@ pub struct ResourceAllocationInfo {
     pub alignment: u64,
 }
 
-pub(crate) type DeviceType = ID3D12Device8;
 
 #[derive(Clone, Debug)]
 pub struct Device {
@@ -202,7 +203,7 @@ impl Device {
     }
 
     #[inline]
-    pub fn handle(&self) -> &ID3D12Device8 {
+    pub fn handle(&self) -> &DeviceType {
         &self.handle
     }
 
