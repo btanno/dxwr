@@ -1257,8 +1257,8 @@ where
         unsafe {
             self.field.device.CopyDescriptorsSimple(
                 len as u32,
-                self.cpu_handle(start).handle,
-                src.cpu_handle(dest_start).handle,
+                self.cpu_handle(dest_start).handle,
+                src.cpu_handle(start).handle,
                 T::VALUE,
             );
         }
