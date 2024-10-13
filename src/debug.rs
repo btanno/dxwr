@@ -38,17 +38,16 @@ pub fn register_output_debug_string_handler(f: impl Fn(&str) + Send + Sync + 'st
                 if let Ok(msg) = psz.to_string() {
                     call_dbg_handlers(&msg);
                 }
-                EXCEPTION_CONTINUE_EXECUTION
             }
             DBG_PRINTEXCEPTION_WIDE_C => {
                 let psz = PCWSTR(record.ExceptionInformation[1] as *const u16);
                 if let Ok(msg) = psz.to_string() {
                     call_dbg_handlers(&msg);
                 }
-                EXCEPTION_CONTINUE_EXECUTION
             }
-            _ => EXCEPTION_CONTINUE_SEARCH,
+            _ => {}
         }
+        EXCEPTION_CONTINUE_SEARCH
     }
     let handlers = DBG_HANDLERS.get_or_init(|| {
         unsafe {
