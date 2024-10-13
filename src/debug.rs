@@ -1,5 +1,4 @@
-use std::sync::{Mutex, OnceLock};
-use windows::core::{PCSTR, PCWSTR};
+use std::sync::{LazyLock, Mutex, OnceLock};
 use windows::Win32::Foundation::{DBG_PRINTEXCEPTION_C, DBG_PRINTEXCEPTION_WIDE_C};
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::System::Diagnostics::Debug::*;
@@ -16,11 +15,8 @@ pub fn enable_debug_layer() -> windows::core::Result<()> {
     Ok(())
 }
 
-type DebugHandler = Box<(dyn Fn(&str) + Send + Sync + 'static)>;
-static DBG_HANDLERS: OnceLock<Mutex<Vec<DebugHandler>>> = OnceLock::new();
-
 fn call_dbg_handlers(msg: &str) {
-    let Some(handlers) = DBG_HANDLERS.get().and_then(|handlers| handlers.lock().ok()) else {
+    let Some(handlers) = DBG_HANDLERS.lock().ok() else {
         return;
     };
     for handler in handlers.iter() {
@@ -28,34 +24,52 @@ fn call_dbg_handlers(msg: &str) {
     }
 }
 
-pub fn register_output_debug_string_handler(f: impl Fn(&str) + Send + Sync + 'static) {
-    unsafe extern "system" fn handler_proc(info: *mut EXCEPTION_POINTERS) -> i32 {
-        let info = info.as_ref().unwrap();
-        let record = info.ExceptionRecord.as_ref().unwrap();
-        match record.ExceptionCode {
-            DBG_PRINTEXCEPTION_C => {
-                let psz = PCSTR(record.ExceptionInformation[1] as *const u8);
-                if let Ok(msg) = psz.to_string() {
-                    call_dbg_handlers(&msg);
-                }
-            }
-            DBG_PRINTEXCEPTION_WIDE_C => {
-                let psz = PCWSTR(record.ExceptionInformation[1] as *const u16);
-                if let Ok(msg) = psz.to_string() {
-                    call_dbg_handlers(&msg);
-                }
-            }
-            _ => {}
-        }
-        EXCEPTION_CONTINUE_SEARCH
+unsafe extern "system" fn exception_handler_proc(pointers: *mut EXCEPTION_POINTERS) -> i32 {
+    let Some(pointers) = pointers.as_ref() else {
+        return EXCEPTION_CONTINUE_EXECUTION;
+    };
+    let Some(record) = pointers.ExceptionRecord.as_ref() else {
+        return EXCEPTION_CONTINUE_EXECUTION;
+    };
+    if record.NumberParameters < 2 {
+        return EXCEPTION_CONTINUE_SEARCH;
     }
-    let handlers = DBG_HANDLERS.get_or_init(|| {
-        unsafe {
-            AddVectoredExceptionHandler(1, Some(handler_proc));
+    match record.ExceptionCode {
+        DBG_PRINTEXCEPTION_C => {
+            let len = record.ExceptionInformation[0];
+            if len >= 2 {
+                let data = record.ExceptionInformation[1] as *const u8;
+                let s = std::slice::from_raw_parts(data, len - 1);
+                if let Ok(msg) = std::str::from_utf8(s) {
+                    call_dbg_handlers(msg);
+                }
+            }
         }
-        Mutex::new(vec![])
-    });
-    let mut handlers = handlers.lock().unwrap();
+        DBG_PRINTEXCEPTION_WIDE_C => {
+            let len = record.ExceptionInformation[0];
+            if len >= 2 {
+                let data = record.ExceptionInformation[1] as *const u16;
+                let s = std::slice::from_raw_parts(data, len - 1);
+                if let Ok(msg) = String::from_utf16(s) {
+                    call_dbg_handlers(&msg);
+                }
+            }
+        }
+        _ => {}
+    }
+    EXCEPTION_CONTINUE_SEARCH
+}
+
+type DebugHandler = Box<(dyn Fn(&str) + Send + Sync + 'static)>;
+static DBG_HANDLERS: LazyLock<Mutex<Vec<DebugHandler>>> = LazyLock::new(|| {
+    unsafe {
+        AddVectoredExceptionHandler(0, Some(exception_handler_proc));
+    }
+    Mutex::new(vec![])
+});
+
+pub fn register_output_debug_string_handler(f: impl Fn(&str) + Send + Sync + 'static) {
+    let mut handlers = DBG_HANDLERS.lock().unwrap();
     handlers.push(Box::new(f));
 }
 
