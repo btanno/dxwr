@@ -2,9 +2,13 @@
 name = "dxwr"
 version = "0.1.0"
 edition = "2021"
-description = "d3d12 and dxgi wrapper"
+description = "Direct3D12 and DXGI wrapper library"
+repository = "https://github.com/btanno/dxwr"
+documentation = "https://docs.rs/dxwr"
 license = "MIT"
 readme = "README.md"
+categories = ["graphics"]
+keywords = ["direct3d", "dxgi", "windows"]
 
 [dependencies]
 
@@ -15,3 +19,7 @@ features = ["Win32_Foundation", "Win32_Security", "Win32_Graphics_Direct3D", "Wi
 [dev-dependencies]
 anyhow = "1.0"
 wiard = "0.1.8"
+
+[package.metadata.docs.rs]
+default-target = "x86_64-pc-windows-msvc"
+targets = []
