@@ -458,7 +458,7 @@ impl<'a, T> Commands<'a, T> {
                 D3D12_CLEAR_FLAGS(flags),
                 depth.unwrap_or(0.0),
                 stencil.unwrap_or(0),
-                rects.map(|rects| as_rect_slice(rects)).unwrap_or(&[]),
+                rects.map(|rects| as_rect_slice(rects)),
             );
         }
     }

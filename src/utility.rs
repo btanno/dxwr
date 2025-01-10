@@ -122,7 +122,7 @@ impl Default for SampleDesc {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
 #[repr(transparent)]
 pub struct GpuVirtualAddressRange(pub D3D12_GPU_VIRTUAL_ADDRESS_RANGE);
 
@@ -145,7 +145,7 @@ impl GpuVirtualAddressRange {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
 #[repr(transparent)]
 pub struct GpuVirtualAddressRangeAndStride(pub D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE);
 
@@ -195,7 +195,7 @@ impl From<u64> for GpuVirtualAddress {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Default, Debug)]
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
 #[repr(transparent)]
 pub struct GpuVirtualAddressAndStride(pub D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE);
 
