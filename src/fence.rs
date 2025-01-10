@@ -4,6 +4,7 @@ use std::sync::{
     Arc,
 };
 use std::time::Duration;
+use windows::Win32::Foundation::HANDLE;
 use windows::Win32::Graphics::Direct3D12::*;
 
 pub struct Builder {
@@ -114,7 +115,9 @@ impl Signal {
     pub fn wait(&self) -> windows::core::Result<()> {
         unsafe {
             if self.fence.handle.GetCompletedValue() < self.value {
-                self.fence.handle.SetEventOnCompletion(self.value, None)?;
+                self.fence
+                    .handle
+                    .SetEventOnCompletion(self.value, HANDLE::default())?;
             }
         }
         Ok(())

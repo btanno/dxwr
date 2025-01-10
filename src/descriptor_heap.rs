@@ -40,7 +40,7 @@ pub mod descriptor_heap_type {
 }
 use descriptor_heap_type::*;
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Debug)]
 pub struct CpuDescriptorHandle<T> {
     heap: ID3D12DescriptorHeap,
     handle: D3D12_CPU_DESCRIPTOR_HANDLE,
@@ -64,7 +64,7 @@ impl<T> Clone for CpuDescriptorHandle<T> {
     }
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Debug)]
 pub struct GpuDescriptorHandle<T> {
     heap: ID3D12DescriptorHeap,
     handle: D3D12_GPU_DESCRIPTOR_HANDLE,
