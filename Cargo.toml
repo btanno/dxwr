@@ -1,6 +1,6 @@
 [package]
 name = "dxwr"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Direct3D12 and DXGI wrapper library"
 repository = "https://github.com/btanno/dxwr"
