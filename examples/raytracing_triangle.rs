@@ -35,7 +35,7 @@ fn build_geometry(device: &dxwr::Device) -> anyhow::Result<(dxwr::Resource, dxwr
         Vertex([-offset, offset, depth]),
         Vertex([offset, offset, depth]),
     ];
-    let vertex_buffer = dxwr::Resource::new(&device)
+    let vertex_buffer = dxwr::Resource::new(device)
         .heap_properties(&dxwr::HeapProperties::upload())
         .resource_desc(&dxwr::ResourceDesc::buffer().width(std::mem::size_of_val(&vertices) as u64))
         .init_state(D3D12_RESOURCE_STATE_GENERIC_READ)
@@ -50,7 +50,7 @@ fn build_geometry(device: &dxwr::Device) -> anyhow::Result<(dxwr::Resource, dxwr
         );
     }
     let indices: [u32; 3] = [0, 1, 2];
-    let index_buffer = dxwr::Resource::new(&device)
+    let index_buffer = dxwr::Resource::new(device)
         .heap_properties(&dxwr::HeapProperties::upload())
         .resource_desc(&dxwr::ResourceDesc::buffer().width(std::mem::size_of_val(&indices) as u64))
         .init_state(D3D12_RESOURCE_STATE_GENERIC_READ)
@@ -411,7 +411,7 @@ fn main() -> anyhow::Result<()> {
             cmd.set_pipeline_state(&state_object);
             cmd.dispatch_rays(&dispatch_rays_desc);
             cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
-                .resource(&rt)
+                .resource(rt)
                 .subresource(0)
                 .state_before(D3D12_RESOURCE_STATE_PRESENT)
                 .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
@@ -428,7 +428,7 @@ fn main() -> anyhow::Result<()> {
                     .state_before(D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
                     .state_after(D3D12_RESOURCE_STATE_COPY_SOURCE),
             ]);
-            cmd.copy_resource(&raytracing_output, &rt);
+            cmd.copy_resource(&raytracing_output, rt);
             cmd.resource_barrier(&[
                 dxwr::TransitionBarrier::new()
                     .resource(rt)

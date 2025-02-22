@@ -167,7 +167,7 @@ impl Device {
         assert!(
             layouts
                 .as_ref()
-                .map_or(true, |layouts| layouts.len() >= num_subresource as usize)
+                .is_none_or(|layouts| layouts.len() >= num_subresource as usize)
         );
         unsafe {
             self.handle.GetCopyableFootprints(

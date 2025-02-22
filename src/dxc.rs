@@ -52,7 +52,7 @@ pub struct RefBlob<'a> {
     _a: std::marker::PhantomData<&'a ()>,
 }
 
-impl<'a> RefBlob<'a> {
+impl RefBlob<'_> {
     #[inline]
     pub fn new(util: &Utils, data: &[u8], encoding: DXC_CP) -> windows::core::Result<Self> {
         unsafe {
@@ -71,7 +71,7 @@ impl<'a> RefBlob<'a> {
     }
 }
 
-impl<'a> BlobType for RefBlob<'a> {
+impl BlobType for RefBlob<'_> {
     fn handle(&self) -> IDxcBlob {
         self.blob.clone()
     }
@@ -452,12 +452,12 @@ impl PartKind {
     #[inline]
     pub fn new(ch: [char; 4]) -> Self {
         assert!(ch.iter().all(|c| c.is_ascii_alphanumeric()));
-        Self(ch[0] as u32 | (ch[1] as u32) << 8 | (ch[2] as u32) << 16 | (ch[3] as u32) << 24)
+        Self(ch[0] as u32 | ((ch[1] as u32) << 8) | ((ch[2] as u32) << 16) | ((ch[3] as u32) << 24))
     }
 
     #[inline]
     pub const fn fourcc(ch0: u8, ch1: u8, ch2: u8, ch3: u8) -> Self {
-        Self(ch0 as u32 | (ch1 as u32) << 8 | (ch2 as u32) << 16 | (ch3 as u32) << 24)
+        Self(ch0 as u32 | ((ch1 as u32) << 8) | ((ch2 as u32) << 16) | ((ch3 as u32) << 24))
     }
 
     #[inline]

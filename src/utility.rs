@@ -42,6 +42,12 @@ impl Rect {
     }
 }
 
+impl Default for Rect {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub(crate) fn as_rect_slice(src: &[Rect]) -> &[windows::Win32::Foundation::RECT] {
     unsafe { std::slice::from_raw_parts(src.as_ptr() as *const _, src.len()) }
 }

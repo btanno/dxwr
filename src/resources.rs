@@ -378,7 +378,7 @@ impl<'a> MappedData<'a> {
     }
 }
 
-impl<'a> Drop for MappedData<'a> {
+impl Drop for MappedData<'_> {
     fn drop(&mut self) {
         unsafe {
             self.resource.Unmap(self.subresource, None);
@@ -462,7 +462,7 @@ impl<HeapProps, Desc> Builder<HeapProps, Desc> {
     }
 }
 
-impl<'a, 'b, T> Builder<&'a HeapProperties, &'b ResourceDesc<T>> {
+impl<T> Builder<&HeapProperties, &ResourceDesc<T>> {
     #[inline]
     pub fn build(self) -> windows::core::Result<Resource> {
         let handle = unsafe {

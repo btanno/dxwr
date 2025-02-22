@@ -133,7 +133,7 @@ pub struct DiscardRegion<'a> {
     _a: std::marker::PhantomData<&'a ()>,
 }
 
-impl<'a> DiscardRegion<'a> {
+impl DiscardRegion<'_> {
     #[inline]
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
@@ -441,7 +441,7 @@ pub struct Commands<'a, T> {
     _t: std::marker::PhantomData<T>,
 }
 
-impl<'a, T> Commands<'a, T> {
+impl<T> Commands<'_, T> {
     #[inline]
     pub fn clear_depth_stencil_view(
         &self,
@@ -458,7 +458,7 @@ impl<'a, T> Commands<'a, T> {
                 D3D12_CLEAR_FLAGS(flags),
                 depth.unwrap_or(0.0),
                 stencil.unwrap_or(0),
-                rects.map(|rects| as_rect_slice(rects)),
+                rects.map(as_rect_slice),
             );
         }
     }
@@ -471,11 +471,8 @@ impl<'a, T> Commands<'a, T> {
         rects: Option<&[Rect]>,
     ) {
         unsafe {
-            self.cmd_list.ClearRenderTargetView(
-                rtv.handle(),
-                color,
-                rects.map(|rects| as_rect_slice(rects)),
-            );
+            self.cmd_list
+                .ClearRenderTargetView(rtv.handle(), color, rects.map(as_rect_slice));
         }
     }
 
@@ -951,7 +948,7 @@ impl<'a, T> Commands<'a, T> {
     }
 }
 
-impl<'a> Commands<'a, Direct> {
+impl Commands<'_, Direct> {
     #[inline]
     pub fn discard_resource(&self, resource: &Resource, region: Option<&DiscardRegion>) {
         unsafe {
@@ -963,7 +960,7 @@ impl<'a> Commands<'a, Direct> {
     }
 }
 
-impl<'a> Commands<'a, Compute> {
+impl Commands<'_, Compute> {
     #[inline]
     pub fn discard_resource(&self, resource: &Resource, region: Option<&DiscardRegion>) {
         unsafe {
@@ -975,7 +972,7 @@ impl<'a> Commands<'a, Compute> {
     }
 }
 
-impl<'a> Commands<'a, Bundle> {}
+impl Commands<'_, Bundle> {}
 
 pub struct Builder<T> {
     device: ID3D12Device,
