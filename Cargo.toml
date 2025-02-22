@@ -13,7 +13,7 @@ keywords = ["direct3d", "dxgi", "windows"]
 [dependencies]
 
 [dependencies.windows]
-version = "0.59"
+version = "0.60"
 features = [
     "Win32_Foundation",
     "Win32_Security",
@@ -29,7 +29,7 @@ features = [
 
 [dev-dependencies]
 anyhow = "1.0"
-wiard = "0.3.2"
+wiard = "0.4"
 
 [package.metadata.docs.rs]
 default-target = "x86_64-pc-windows-msvc"
