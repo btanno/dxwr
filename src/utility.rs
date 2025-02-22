@@ -1,11 +1,11 @@
 use std::sync::Arc;
 use std::sync::OnceLock;
 use std::time::Duration;
-use windows::core::HSTRING;
 use windows::Win32::Foundation::{CloseHandle, HANDLE, WAIT_OBJECT_0};
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::{Common::*, *};
-use windows::Win32::System::Threading::{CreateEventW, WaitForSingleObject, INFINITE};
+use windows::Win32::System::Threading::{CreateEventW, INFINITE, WaitForSingleObject};
+use windows::core::HSTRING;
 
 #[derive(Clone, Copy, Debug)]
 #[repr(transparent)]

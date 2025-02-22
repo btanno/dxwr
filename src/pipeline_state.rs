@@ -1,8 +1,8 @@
 use super::*;
 use std::mem::ManuallyDrop;
-use windows::core::PCSTR;
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::Common::*;
+use windows::core::PCSTR;
 
 #[derive(Clone, Debug)]
 #[repr(transparent)]

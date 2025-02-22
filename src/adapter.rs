@@ -1,8 +1,8 @@
 use super::utility::dxgi_factory;
 use std::sync::Arc;
-use windows::core::Interface;
 use windows::Win32::Foundation::LUID;
 use windows::Win32::Graphics::Dxgi::*;
+use windows::core::Interface;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct AdapterId {

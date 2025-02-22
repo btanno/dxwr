@@ -1,7 +1,7 @@
 use super::dxc::BlobType;
 use super::*;
-use windows::core::Interface;
 use windows::Win32::Graphics::{Direct3D::Dxc::*, Direct3D::*, Direct3D12::*};
+use windows::core::Interface;
 
 #[derive(Clone, Debug)]
 pub struct SignatureParameterDesc {
