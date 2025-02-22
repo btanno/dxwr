@@ -215,8 +215,8 @@ impl ShaderResourceViewDesc<()> {
     }
 
     #[inline]
-    pub fn raytracing_acceleration_structure(
-    ) -> ShaderResourceViewDesc<dimension::RaytracingAccelerationStructure> {
+    pub fn raytracing_acceleration_structure()
+    -> ShaderResourceViewDesc<dimension::RaytracingAccelerationStructure> {
         Self::new(D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE)
     }
 

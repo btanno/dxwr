@@ -25,39 +25,41 @@ fn call_dbg_handlers(msg: &str) {
 }
 
 unsafe extern "system" fn exception_handler_proc(pointers: *mut EXCEPTION_POINTERS) -> i32 {
-    let Some(pointers) = pointers.as_ref() else {
-        return EXCEPTION_CONTINUE_EXECUTION;
-    };
-    let Some(record) = pointers.ExceptionRecord.as_ref() else {
-        return EXCEPTION_CONTINUE_EXECUTION;
-    };
-    if record.NumberParameters < 2 {
-        return EXCEPTION_CONTINUE_SEARCH;
-    }
-    match record.ExceptionCode {
-        DBG_PRINTEXCEPTION_C => {
-            let len = record.ExceptionInformation[0];
-            if len >= 2 {
-                let data = record.ExceptionInformation[1] as *const u8;
-                let s = std::slice::from_raw_parts(data, len - 1);
-                if let Ok(msg) = std::str::from_utf8(s) {
-                    call_dbg_handlers(msg);
+    unsafe {
+        let Some(pointers) = pointers.as_ref() else {
+            return EXCEPTION_CONTINUE_EXECUTION;
+        };
+        let Some(record) = pointers.ExceptionRecord.as_ref() else {
+            return EXCEPTION_CONTINUE_EXECUTION;
+        };
+        if record.NumberParameters < 2 {
+            return EXCEPTION_CONTINUE_SEARCH;
+        }
+        match record.ExceptionCode {
+            DBG_PRINTEXCEPTION_C => {
+                let len = record.ExceptionInformation[0];
+                if len >= 2 {
+                    let data = record.ExceptionInformation[1] as *const u8;
+                    let s = std::slice::from_raw_parts(data, len - 1);
+                    if let Ok(msg) = std::str::from_utf8(s) {
+                        call_dbg_handlers(msg);
+                    }
                 }
             }
-        }
-        DBG_PRINTEXCEPTION_WIDE_C => {
-            let len = record.ExceptionInformation[0];
-            if len >= 2 {
-                let data = record.ExceptionInformation[1] as *const u16;
-                let s = std::slice::from_raw_parts(data, len - 1);
-                if let Ok(msg) = String::from_utf16(s) {
-                    call_dbg_handlers(&msg);
+            DBG_PRINTEXCEPTION_WIDE_C => {
+                let len = record.ExceptionInformation[0];
+                if len >= 2 {
+                    let data = record.ExceptionInformation[1] as *const u16;
+                    let s = std::slice::from_raw_parts(data, len - 1);
+                    if let Ok(msg) = String::from_utf16(s) {
+                        call_dbg_handlers(&msg);
+                    }
                 }
             }
+            _ => {}
         }
-        _ => {}
+        EXCEPTION_CONTINUE_SEARCH
     }
-    EXCEPTION_CONTINUE_SEARCH
 }
 
 type DebugHandler = Box<(dyn Fn(&str) + Send + Sync + 'static)>;

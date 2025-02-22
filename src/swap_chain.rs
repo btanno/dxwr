@@ -1,7 +1,7 @@
 use super::*;
-use windows::core::Interface;
 use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::Dxgi::{Common::*, *};
+use windows::core::Interface;
 
 pub struct Builder<Q = ()> {
     cmd_queue: Q,

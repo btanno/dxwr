@@ -1,8 +1,8 @@
 use super::*;
-use windows::core::GUID;
 use windows::Win32::Graphics::Direct3D::*;
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::Common::*;
+use windows::core::GUID;
 
 pub trait Feature: Sized {
     fn check(device: &DeviceType) -> windows::core::Result<Self>;

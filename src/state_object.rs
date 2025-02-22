@@ -1,8 +1,8 @@
 use super::*;
 use std::mem::ManuallyDrop;
+use windows::Win32::Graphics::Direct3D12::*;
 use windows::core::Interface;
 use windows::core::{HSTRING, PCWSTR};
-use windows::Win32::Graphics::Direct3D12::*;
 
 pub trait StateSubobject {
     fn type_value(&self) -> D3D12_STATE_SUBOBJECT_TYPE;

@@ -1,7 +1,7 @@
 use super::*;
 use std::sync::{
-    atomic::{self, AtomicU64},
     Arc,
+    atomic::{self, AtomicU64},
 };
 use std::time::Duration;
 use windows::Win32::Foundation::HANDLE;

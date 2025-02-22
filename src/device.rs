@@ -1,10 +1,10 @@
 use super::raytracing::BuildRaytracingAccelerationStructureInputsType;
 use super::*;
-use windows::core::IUnknown;
 use windows::Win32::Foundation::LUID;
 use windows::Win32::Graphics::Direct3D::*;
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT;
+use windows::core::IUnknown;
 
 pub type DeviceType = ID3D12Device9;
 
@@ -110,7 +110,6 @@ pub struct ResourceAllocationInfo {
     pub alignment: u64,
 }
 
-
 #[derive(Clone, Debug)]
 pub struct Device {
     handle: DeviceType,
@@ -165,9 +164,11 @@ impl Device {
         row_size_in_bytes: Option<&mut u64>,
         total_size: Option<&mut u64>,
     ) {
-        assert!(layouts
-            .as_ref()
-            .map_or(true, |layouts| layouts.len() >= num_subresource as usize));
+        assert!(
+            layouts
+                .as_ref()
+                .map_or(true, |layouts| layouts.len() >= num_subresource as usize)
+        );
         unsafe {
             self.handle.GetCopyableFootprints(
                 &resource_desc.desc,

@@ -32,7 +32,7 @@ pub mod dxgi {
     pub use windows::Win32::Graphics::Dxgi::{Common::*, *};
 }
 
-pub use adapter::{enum_adapters, enum_warp_adapter, Adapter, AdapterId, AdapterMemoryInfo};
+pub use adapter::{Adapter, AdapterId, AdapterMemoryInfo, enum_adapters, enum_warp_adapter};
 pub use command_allocator::{
     BundleCommandAllocator, CommandAllocator, ComputeCommandAllocator, CopyCommandAllocator,
     DirectCommandAllocator, VideoDecodeCommandAllocator, VideoEncodeCommandAllocator,
@@ -52,13 +52,12 @@ pub use command_queue::{
 };
 pub use debug::*;
 pub use descriptor_heap::{
-    descriptor_heap_type, CbvSrvUavCpuDescriptorHandle, CbvSrvUavDescriptorHeap,
-    CbvSrvUavGpuDescriptorHandle, ConstantBufferViewDesc, CpuDescriptorHandle,
-    DepthStencilViewDesc, DescriptorHeap, DsvCpuDescriptorHandle, DsvDescriptorHeap,
-    DsvGpuDescriptorHandle, GpuDescriptorHandle, RenderTargetViewDesc, RtvCpuDescriptorHandle,
-    RtvDescriptorHeap, RtvGpuDescriptorHandle, SamplerCpuDescriptorHandle, SamplerDesc,
-    SamplerDescriptorHeap, SamplerGpuDescriptorHandle, ShaderResourceViewDesc,
-    UnorderedAccessViewDesc,
+    CbvSrvUavCpuDescriptorHandle, CbvSrvUavDescriptorHeap, CbvSrvUavGpuDescriptorHandle,
+    ConstantBufferViewDesc, CpuDescriptorHandle, DepthStencilViewDesc, DescriptorHeap,
+    DsvCpuDescriptorHandle, DsvDescriptorHeap, DsvGpuDescriptorHandle, GpuDescriptorHandle,
+    RenderTargetViewDesc, RtvCpuDescriptorHandle, RtvDescriptorHeap, RtvGpuDescriptorHandle,
+    SamplerCpuDescriptorHandle, SamplerDesc, SamplerDescriptorHeap, SamplerGpuDescriptorHandle,
+    ShaderResourceViewDesc, UnorderedAccessViewDesc, descriptor_heap_type,
 };
 pub use device::{Device, PlacedSubresourceFootprint, SubresourceFootprint};
 pub use dxc::{Blob, BlobType, RefBlob};
@@ -74,8 +73,8 @@ pub use reflection::{LibraryReflection, ReflectionType, ShaderReflection};
 pub use resource_barriers::{AliasingBarrier, TransitionBarrier, UavBarrier};
 pub use resources::{ClearValue, Heap, HeapProperties, Resource, ResourceDesc};
 pub use root_signature::{
-    root_parameter_type, DescriptorRange, RootParameter, RootSignature, RootSignatureDesc,
-    StaticSamplerDesc,
+    DescriptorRange, RootParameter, RootSignature, RootSignatureDesc, StaticSamplerDesc,
+    root_parameter_type,
 };
 pub use state_object::{
     DxilLibraryDesc, DxilSubobjectToExportsAssociation, ExistingCollectionDesc, ExportDesc,

@@ -349,22 +349,22 @@ impl<'a> MappedData<'a> {
 
     #[inline]
     pub unsafe fn as_ref<T>(&self) -> &'a T {
-        self.data.cast::<T>().as_ref().unwrap()
+        unsafe { self.data.cast::<T>().as_ref().unwrap() }
     }
 
     #[inline]
     pub unsafe fn as_mut<T>(&self) -> &'a mut T {
-        self.data.cast::<T>().as_mut().unwrap()
+        unsafe { self.data.cast::<T>().as_mut().unwrap() }
     }
 
     #[inline]
     pub unsafe fn as_slice<T>(&self, len: usize) -> &'a [T] {
-        std::slice::from_raw_parts(self.data as *const T, len)
+        unsafe { std::slice::from_raw_parts(self.data as *const T, len) }
     }
 
     #[inline]
     pub unsafe fn as_slice_mut<T>(&self, len: usize) -> &'a mut [T] {
-        std::slice::from_raw_parts_mut(self.data as *mut T, len)
+        unsafe { std::slice::from_raw_parts_mut(self.data as *mut T, len) }
     }
 
     #[inline]
