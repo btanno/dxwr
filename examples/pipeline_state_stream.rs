@@ -26,7 +26,7 @@ struct PipelineStateDesc<'a, 'b, 'c, 'd, 'e> {
     _sample_desc: dxwr::StreamSubobject<dxwr::SampleDesc>,
 }
 
-impl<'a, 'b, 'c, 'd, 'e> PipelineStateDesc<'a, 'b, 'c, 'd, 'e> {
+impl<'c, 'd> PipelineStateDesc<'_, '_, 'c, 'd, '_> {
     fn new(
         root_sig: &dxwr::RootSignature,
         input_elements: &'c [dxwr::InputElementDesc<'d>],
@@ -42,7 +42,7 @@ impl<'a, 'b, 'c, 'd, 'e> PipelineStateDesc<'a, 'b, 'c, 'd, 'e> {
                 D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
             )
             .into(),
-            _input_layout: dxwr::InputLayout(&input_elements).into(),
+            _input_layout: dxwr::InputLayout(input_elements).into(),
             _rtv_formats: dxwr::RenderTargetFormats(&[DXGI_FORMAT_R8G8B8A8_UNORM]).into(),
             _sample_desc: Default::default(),
         }
@@ -136,52 +136,49 @@ fn main() -> anyhow::Result<()> {
         let Some((event, _)) = event_rx.recv() else {
             break;
         };
-        match event {
-            wiard::Event::Draw(_) => {
-                let index = swap_chain.get_current_back_buffer_index();
-                let rtv_handle = rtv.cpu_handle(index);
-                let rt = &render_targets[index];
-                cmd_list.record(&cmd_allocator, |cmd| {
-                    cmd.set_pipeline_state(&pipeline);
-                    cmd.set_graphics_root_signature(&root_signature);
-                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
-                        .resource(&rt)
-                        .subresource(0)
-                        .state_before(D3D12_RESOURCE_STATE_PRESENT)
-                        .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
-                    cmd.rs_set_viewports(&[dxwr::Viewport::new()
-                        .width(size.width as f32)
-                        .height(size.height as f32)]);
-                    cmd.rs_set_scissor_rects(&[dxwr::Rect::new()
-                        .right(size.width as i32)
-                        .bottom(size.height as i32)]);
-                    cmd.clear_render_target_view(&rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
-                    cmd.om_set_render_targets(Some(&[&rtv_handle]), true, None);
-                    cmd.ia_set_vertex_buffers(
-                        0,
-                        Some(&[dxwr::VertexBufferView::new()
-                            .buffer_location(vertex_buffer.get_gpu_virtual_address())
-                            .size_in_bytes(std::mem::size_of_val(&vertices) as u32)
-                            .stride_in_bytes(std::mem::size_of::<Vertex>() as u32)]),
-                    );
-                    cmd.ia_set_index_buffer(Some(
-                        &dxwr::IndexBufferView::new()
-                            .buffer_location(index_buffer.get_gpu_virtual_address())
-                            .size_in_bytes(std::mem::size_of_val(&indices) as u32)
-                            .format(DXGI_FORMAT_R32_UINT),
-                    ));
-                    cmd.ia_set_primitive_topology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-                    cmd.draw_indexed_instanced(3, 1, 0, 0, 0);
-                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
-                        .resource(&rt)
-                        .subresource(0)
-                        .state_before(D3D12_RESOURCE_STATE_RENDER_TARGET)
-                        .state_after(D3D12_RESOURCE_STATE_PRESENT)]);
-                })?;
-                cmd_queue.execute_command_lists(&[&cmd_list]);
-                swap_chain.present(&fence, 0, DXGI_PRESENT(0))?.wait()?;
-            }
-            _ => {}
+        if let wiard::Event::Draw(_) = event {
+            let index = swap_chain.get_current_back_buffer_index();
+            let rtv_handle = rtv.cpu_handle(index);
+            let rt = &render_targets[index];
+            cmd_list.record(&cmd_allocator, |cmd| {
+                cmd.set_pipeline_state(&pipeline);
+                cmd.set_graphics_root_signature(&root_signature);
+                cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
+                    .resource(rt)
+                    .subresource(0)
+                    .state_before(D3D12_RESOURCE_STATE_PRESENT)
+                    .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
+                cmd.rs_set_viewports(&[dxwr::Viewport::new()
+                    .width(size.width as f32)
+                    .height(size.height as f32)]);
+                cmd.rs_set_scissor_rects(&[dxwr::Rect::new()
+                    .right(size.width as i32)
+                    .bottom(size.height as i32)]);
+                cmd.clear_render_target_view(&rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
+                cmd.om_set_render_targets(Some(&[&rtv_handle]), true, None);
+                cmd.ia_set_vertex_buffers(
+                    0,
+                    Some(&[dxwr::VertexBufferView::new()
+                        .buffer_location(vertex_buffer.get_gpu_virtual_address())
+                        .size_in_bytes(std::mem::size_of_val(&vertices) as u32)
+                        .stride_in_bytes(std::mem::size_of::<Vertex>() as u32)]),
+                );
+                cmd.ia_set_index_buffer(Some(
+                    &dxwr::IndexBufferView::new()
+                        .buffer_location(index_buffer.get_gpu_virtual_address())
+                        .size_in_bytes(std::mem::size_of_val(&indices) as u32)
+                        .format(DXGI_FORMAT_R32_UINT),
+                ));
+                cmd.ia_set_primitive_topology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                cmd.draw_indexed_instanced(3, 1, 0, 0, 0);
+                cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
+                    .resource(rt)
+                    .subresource(0)
+                    .state_before(D3D12_RESOURCE_STATE_RENDER_TARGET)
+                    .state_after(D3D12_RESOURCE_STATE_PRESENT)]);
+            })?;
+            cmd_queue.execute_command_lists(&[&cmd_list]);
+            swap_chain.present(&fence, 0, DXGI_PRESENT(0))?.wait()?;
         }
     }
     Ok(())

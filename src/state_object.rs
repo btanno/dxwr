@@ -176,7 +176,7 @@ impl<'a> DxilLibraryDesc<'a> {
     }
 }
 
-impl<'a> StateSubobject for DxilLibraryDesc<'a> {
+impl StateSubobject for DxilLibraryDesc<'_> {
     fn type_value(&self) -> D3D12_STATE_SUBOBJECT_TYPE {
         D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY
     }

@@ -45,29 +45,26 @@ fn main() -> anyhow::Result<()> {
         let Some((event, _)) = event_rx.recv() else {
             break;
         };
-        match event {
-            wiard::Event::Draw(_) => {
-                let index = swap_chain.get_current_back_buffer_index();
-                let rtv_handle = rtv.cpu_handle(index);
-                let rt = &render_targets[index];
-                cmd_list.record(&cmd_allocator, |cmd| {
-                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
-                        .resource(&rt)
-                        .subresource(0)
-                        .state_before(D3D12_RESOURCE_STATE_PRESENT)
-                        .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
-                    cmd.clear_render_target_view(&rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
-                    cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
-                        .resource(&rt)
-                        .subresource(0)
-                        .state_before(D3D12_RESOURCE_STATE_RENDER_TARGET)
-                        .state_after(D3D12_RESOURCE_STATE_PRESENT)]);
-                })?;
-                cmd_queue.execute_command_lists(&[&cmd_list]);
-                let signal = swap_chain.present(&fence, 0, DXGI_PRESENT(0))?;
-                signal.wait()?;
-            }
-            _ => {}
+        if let wiard::Event::Draw(_) = event {
+            let index = swap_chain.get_current_back_buffer_index();
+            let rtv_handle = rtv.cpu_handle(index);
+            let rt = &render_targets[index];
+            cmd_list.record(&cmd_allocator, |cmd| {
+                cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
+                    .resource(rt)
+                    .subresource(0)
+                    .state_before(D3D12_RESOURCE_STATE_PRESENT)
+                    .state_after(D3D12_RESOURCE_STATE_RENDER_TARGET)]);
+                cmd.clear_render_target_view(&rtv_handle, &[0.0, 0.0, 0.3, 0.0], None);
+                cmd.resource_barrier(&[dxwr::TransitionBarrier::new()
+                    .resource(rt)
+                    .subresource(0)
+                    .state_before(D3D12_RESOURCE_STATE_RENDER_TARGET)
+                    .state_after(D3D12_RESOURCE_STATE_PRESENT)]);
+            })?;
+            cmd_queue.execute_command_lists(&[&cmd_list]);
+            let signal = swap_chain.present(&fence, 0, DXGI_PRESENT(0))?;
+            signal.wait()?;
         }
     }
     Ok(())

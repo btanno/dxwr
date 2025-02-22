@@ -145,7 +145,7 @@ impl<'decl, 'strides> StreamOutputDesc<'decl, 'strides> {
 
 pub struct RenderTargetBlendDesc<'a>(&'a mut D3D12_RENDER_TARGET_BLEND_DESC);
 
-impl<'a> RenderTargetBlendDesc<'a> {
+impl RenderTargetBlendDesc<'_> {
     #[inline]
     pub fn blend_enable(&mut self, value: bool) {
         self.0.BlendEnable = value.into();
@@ -460,7 +460,7 @@ pub struct InputElementDesc<'a> {
     _a: std::marker::PhantomData<&'a ()>,
 }
 
-impl<'a> InputElementDesc<'a> {
+impl InputElementDesc<'_> {
     #[inline]
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
@@ -747,7 +747,7 @@ pub struct ComputePipelineStateDesc<'cs> {
     _cs: std::marker::PhantomData<&'cs ()>,
 }
 
-impl<'cs> ComputePipelineStateDesc<'cs> {
+impl ComputePipelineStateDesc<'_> {
     #[inline]
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
@@ -1030,7 +1030,7 @@ impl Subobject for RootSignature {
     }
 }
 
-impl<'a> Subobject for Vs<'a> {
+impl Subobject for Vs<'_> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS;
     type Inner = Self;
 
@@ -1039,7 +1039,7 @@ impl<'a> Subobject for Vs<'a> {
     }
 }
 
-impl<'a> Subobject for Ps<'a> {
+impl Subobject for Ps<'_> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PS;
     type Inner = Self;
 
@@ -1048,7 +1048,7 @@ impl<'a> Subobject for Ps<'a> {
     }
 }
 
-impl<'a> Subobject for Ds<'a> {
+impl Subobject for Ds<'_> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DS;
     type Inner = Self;
 
@@ -1057,7 +1057,7 @@ impl<'a> Subobject for Ds<'a> {
     }
 }
 
-impl<'a> Subobject for Hs<'a> {
+impl Subobject for Hs<'_> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_HS;
     type Inner = Self;
 
@@ -1066,7 +1066,7 @@ impl<'a> Subobject for Hs<'a> {
     }
 }
 
-impl<'a> Subobject for Gs<'a> {
+impl Subobject for Gs<'_> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_GS;
     type Inner = Self;
 
@@ -1075,7 +1075,7 @@ impl<'a> Subobject for Gs<'a> {
     }
 }
 
-impl<'a> Subobject for Ms<'a> {
+impl Subobject for Ms<'_> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_MS;
     type Inner = Self;
 
@@ -1084,7 +1084,7 @@ impl<'a> Subobject for Ms<'a> {
     }
 }
 
-impl<'a> Subobject for As<'a> {
+impl Subobject for As<'_> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_AS;
     type Inner = Self;
 
@@ -1093,7 +1093,7 @@ impl<'a> Subobject for As<'a> {
     }
 }
 
-impl<'decl, 'strides> Subobject for StreamOutputDesc<'decl, 'strides> {
+impl Subobject for StreamOutputDesc<'_, '_> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_STREAM_OUTPUT;
     type Inner = Self;
@@ -1142,7 +1142,7 @@ impl Subobject for DepthStencilDesc {
     }
 }
 
-impl<'a, 'b> Subobject for InputLayout<'a, 'b> {
+impl Subobject for InputLayout<'_, '_> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT;
     type Inner = Self;
@@ -1172,7 +1172,7 @@ impl Subobject for PrimitiveTopologyType {
     }
 }
 
-impl<'a> Subobject for RenderTargetFormats<'a> {
+impl Subobject for RenderTargetFormats<'_> {
     const VALUE: D3D12_PIPELINE_STATE_SUBOBJECT_TYPE =
         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS;
     type Inner = D3D12_RT_FORMAT_ARRAY;
@@ -1303,11 +1303,7 @@ impl<T> Builder<T> {
     }
 }
 
-impl<'vs, 'ps, 'ds, 'hs, 'gs, 'so_decl, 'so_strides, 'input_layout>
-    Builder<
-        GraphicsPipelineStateDesc<'vs, 'ps, 'ds, 'hs, 'gs, 'so_decl, 'so_strides, 'input_layout>,
-    >
-{
+impl Builder<GraphicsPipelineStateDesc<'_, '_, '_, '_, '_, '_, '_, '_>> {
     #[inline]
     pub fn build(self) -> windows::core::Result<PipelineState> {
         let handle = unsafe { self.device.CreateGraphicsPipelineState(&self.desc.desc) };
@@ -1318,7 +1314,7 @@ impl<'vs, 'ps, 'ds, 'hs, 'gs, 'so_decl, 'so_strides, 'input_layout>
     }
 }
 
-impl<'cs> Builder<ComputePipelineStateDesc<'cs>> {
+impl Builder<ComputePipelineStateDesc<'_>> {
     #[inline]
     pub fn build(self) -> windows::core::Result<PipelineState> {
         let handle = unsafe { self.device.CreateComputePipelineState(&self.desc.desc) };
@@ -1329,7 +1325,7 @@ impl<'cs> Builder<ComputePipelineStateDesc<'cs>> {
     }
 }
 
-impl<'a, T> Builder<PipelineStateStreamDesc<'a, T>> {
+impl<T> Builder<PipelineStateStreamDesc<'_, T>> {
     #[inline]
     pub fn build(self) -> windows::core::Result<PipelineState> {
         let handle = unsafe { self.device.CreatePipelineState(&self.desc.desc)? };
