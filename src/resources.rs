@@ -507,7 +507,7 @@ impl Resource {
     }
 
     #[inline]
-    pub fn map(&self, subresource: u32) -> windows::core::Result<MappedData> {
+    pub fn map(&self, subresource: u32) -> windows::core::Result<MappedData<'_>> {
         MappedData::new(&self.handle, subresource)
     }
 

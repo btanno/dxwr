@@ -120,7 +120,7 @@ impl CompileResult {
         Ok(output)
     }
 
-    pub(crate) fn get_blob(&self, kind: DXC_OUT_KIND) -> windows::core::Result<RefBlob> {
+    pub(crate) fn get_blob(&self, kind: DXC_OUT_KIND) -> windows::core::Result<RefBlob<'_>> {
         let blob = self.get_output::<IDxcBlob>(kind)?;
         unsafe {
             if blob.GetBufferPointer().is_null() {
@@ -153,7 +153,7 @@ impl CompileResult {
     }
 
     #[inline]
-    pub fn object(&self) -> windows::core::Result<RefBlob> {
+    pub fn object(&self) -> windows::core::Result<RefBlob<'_>> {
         self.get_blob(DXC_OUT_OBJECT)
     }
 
@@ -163,7 +163,7 @@ impl CompileResult {
     }
 
     #[inline]
-    pub fn pdb(&self) -> windows::core::Result<RefBlob> {
+    pub fn pdb(&self) -> windows::core::Result<RefBlob<'_>> {
         self.get_blob(DXC_OUT_PDB)
     }
 
@@ -194,7 +194,7 @@ impl CompileResult {
     }
 
     #[inline]
-    pub fn root_signature(&self) -> windows::core::Result<RefBlob> {
+    pub fn root_signature(&self) -> windows::core::Result<RefBlob<'_>> {
         self.get_blob(DXC_OUT_ROOT_SIGNATURE)
     }
 

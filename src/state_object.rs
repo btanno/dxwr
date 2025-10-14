@@ -558,7 +558,7 @@ pub struct StateObject {
 impl StateObject {
     #[inline]
     #[allow(clippy::new_ret_no_self)]
-    pub fn new(device: &Device, ty: D3D12_STATE_OBJECT_TYPE) -> Builder {
+    pub fn new(device: &Device, ty: D3D12_STATE_OBJECT_TYPE) -> Builder<'_> {
         Builder::new(device.handle(), ty)
     }
 

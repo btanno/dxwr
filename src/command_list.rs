@@ -144,7 +144,7 @@ impl DiscardRegion<'_> {
     }
 
     #[inline]
-    pub fn rects(self, rects: &[Rect]) -> DiscardRegion {
+    pub fn rects(self, rects: &[Rect]) -> DiscardRegion<'_> {
         let rects = as_rect_slice(rects);
         DiscardRegion {
             region: D3D12_DISCARD_REGION {

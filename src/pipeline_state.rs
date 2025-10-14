@@ -475,7 +475,7 @@ impl InputElementDesc<'_> {
     }
 
     #[inline]
-    pub fn semantic_name(self, name: &[u8]) -> InputElementDesc {
+    pub fn semantic_name(self, name: &[u8]) -> InputElementDesc<'_> {
         InputElementDesc {
             desc: D3D12_INPUT_ELEMENT_DESC {
                 SemanticName: PCSTR(name.as_ptr()),

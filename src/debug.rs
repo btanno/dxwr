@@ -62,7 +62,7 @@ unsafe extern "system" fn exception_handler_proc(pointers: *mut EXCEPTION_POINTE
     }
 }
 
-type DebugHandler = Box<(dyn Fn(&str) + Send + Sync + 'static)>;
+type DebugHandler = Box<dyn Fn(&str) + Send + Sync + 'static>;
 static DBG_HANDLERS: LazyLock<Mutex<Vec<DebugHandler>>> = LazyLock::new(|| {
     unsafe {
         AddVectoredExceptionHandler(0, Some(exception_handler_proc));
