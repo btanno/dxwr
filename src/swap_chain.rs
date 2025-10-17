@@ -215,4 +215,9 @@ impl SwapChain {
         }
         self.cmd_queue.signal(fence)
     }
+
+    #[inline]
+    pub fn handle(&self) -> &IDXGISwapChain4 {
+        &self.handle
+    }
 }
