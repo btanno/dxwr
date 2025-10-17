@@ -20,6 +20,10 @@ mod state_object;
 mod swap_chain;
 mod utility;
 
+pub mod com {
+    pub use ::windows::core::Interface;
+}
+
 pub mod d3d {
     pub use windows::Win32::Graphics::Direct3D::*;
 }
