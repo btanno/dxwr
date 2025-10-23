@@ -6,6 +6,8 @@ use std::sync::{
 use std::time::Duration;
 use windows::Win32::Foundation::HANDLE;
 use windows::Win32::Graphics::Direct3D12::*;
+use windows::core::Interface;
+use crate::resources::ShareableHandle;
 
 pub struct Builder {
     device: ID3D12Device,
@@ -94,6 +96,13 @@ impl PartialEq for Fence {
 }
 
 impl Eq for Fence {}
+
+impl ShareableHandle for Fence {
+    #[inline]
+    fn as_device_child(&self) -> ID3D12DeviceChild {
+        self.handle.cast().unwrap()
+    }
+}
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Signal {

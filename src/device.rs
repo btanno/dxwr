@@ -1,10 +1,12 @@
 use super::raytracing::BuildRaytracingAccelerationStructureInputsType;
 use super::*;
-use windows::Win32::Foundation::LUID;
+use crate::resources::ShareableHandle;
+use windows::Win32::Foundation::{GENERIC_ALL, LUID};
 use windows::Win32::Graphics::Direct3D::*;
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT;
-use windows::core::IUnknown;
+use windows::Win32::Security::SECURITY_ATTRIBUTES;
+use windows::core::{HSTRING, IUnknown};
 
 pub type DeviceType = ID3D12Device9;
 
@@ -201,6 +203,42 @@ impl Device {
                 alignment: info.Alignment,
             }
         }
+    }
+
+    #[inline]
+    pub fn create_shared_handle(
+        &self,
+        child: &impl ShareableHandle,
+        attrs: Option<&SECURITY_ATTRIBUTES>,
+        name: Option<&str>,
+    ) -> windows::core::Result<SharedHandle> {
+        unsafe {
+            let name = name.map(|name| HSTRING::from(name));
+            let handle = if let Some(name) = name {
+                self.handle.CreateSharedHandle(
+                    &child.as_device_child(),
+                    attrs.map(|attrs| attrs as *const SECURITY_ATTRIBUTES),
+                    GENERIC_ALL.0,
+                    &name,
+                )?
+            } else {
+                self.handle.CreateSharedHandle(
+                    &child.as_device_child(),
+                    attrs.map(|attrs| attrs as *const SECURITY_ATTRIBUTES),
+                    GENERIC_ALL.0,
+                    None,
+                )?
+            };
+            Ok(SharedHandle::new(handle))
+        }
+    }
+
+    #[inline]
+    pub unsafe fn open_shared_handle<T: resources::FromSharedHandle>(
+        &self,
+        handle: *mut std::ffi::c_void,
+    ) -> windows::core::Result<T> {
+        unsafe { T::from_handle(self, handle) }
     }
 
     #[inline]
