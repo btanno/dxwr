@@ -48,10 +48,12 @@ fn main() -> anyhow::Result<()> {
     let fence = dxwr::Fence::new(&device).build()?;
     let cmd_allocator = dxwr::DirectCommandAllocator::new(&device).build()?;
     let cmd_list = dxwr::DirectGraphicsCommandList::new(&device).build()?;
-    let root_signature = dxwr::RootSignature::new(&device).build_from_desc(
-        &dxwr::RootSignatureDesc::new()
-            .flags(D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),
-    )?;
+    let root_signature = dxwr::RootSignature::new(&device)
+        .desc(
+            &dxwr::RootSignatureDesc::new()
+                .flags(D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),
+        )
+        .build()?;
     let pipeline = dxwr::PipelineState::new(&device)
         .desc(
             dxwr::GraphicsPipelineStateDesc::new()
