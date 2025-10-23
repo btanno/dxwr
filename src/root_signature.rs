@@ -440,13 +440,14 @@ impl<'params, 'samplers> RootSignatureDesc<'params, 'samplers> {
     }
 }
 
-pub struct Builder {
+pub struct Builder<Desc = ()> {
     device: ID3D12Device,
     node_mask: u32,
     name: Option<String>,
+    desc: Desc,
 }
 
-impl Builder {
+impl Builder<()> {
     fn new<T>(device: &T) -> Self
     where
         T: Into<ID3D12Device> + Clone,
@@ -456,9 +457,12 @@ impl Builder {
             device,
             node_mask: 0,
             name: None,
+            desc: (),
         }
     }
+}
 
+impl<Desc> Builder<Desc> {
     #[inline]
     pub fn node_mask(mut self, mask: u32) -> Self {
         self.node_mask = mask;
@@ -472,13 +476,30 @@ impl Builder {
     }
 
     #[inline]
-    pub fn build_from_desc(self, desc: &RootSignatureDesc) -> windows::core::Result<RootSignature> {
-        let parameters = desc
+    pub fn desc<'a, 'p, 's>(
+        self,
+        desc: &'a RootSignatureDesc<'p, 's>,
+    ) -> Builder<&'a RootSignatureDesc<'p, 's>> {
+        Builder {
+            device: self.device,
+            node_mask: self.node_mask,
+            name: self.name,
+            desc,
+        }
+    }
+}
+
+impl<'a, 'p, 's> Builder<&'a RootSignatureDesc<'p, 's>> {
+    #[inline]
+    pub fn build(self) -> windows::core::Result<RootSignature> {
+        let parameters = self
+            .desc
             .params
             .as_ref()
             .map(|params| params.iter().map(|p| p.param).collect::<Vec<_>>())
             .unwrap_or_default();
-        let samplers = desc
+        let samplers = self
+            .desc
             .samplers
             .as_ref()
             .map(|samplers| samplers.to_vec())
@@ -488,7 +509,7 @@ impl Builder {
             pParameters: parameters.as_ptr(),
             NumStaticSamplers: samplers.len() as u32,
             pStaticSamplers: samplers.as_ptr() as *const D3D12_STATIC_SAMPLER_DESC,
-            Flags: desc.flags,
+            Flags: self.desc.flags,
         };
         let blob = unsafe {
             let mut blob: Option<ID3DBlob> = None;

@@ -84,7 +84,7 @@ fn main() -> anyhow::Result<()> {
     let fence = dxwr::Fence::new(&device).build()?;
     let global_root_signature = dxwr::RootSignature::new(&device)
         .name("global_root_signature")
-        .build_from_desc(
+        .desc(
             &dxwr::RootSignatureDesc::new().parameters(&[
                 dxwr::RootParameter::new(dxwr::root_parameter_type::DescriptorTable)
                     .ranges([dxwr::DescriptorRange::uav().num_descriptors(1)])
@@ -93,10 +93,11 @@ fn main() -> anyhow::Result<()> {
                     .register_space(0)
                     .into(),
             ]),
-        )?;
+        )
+        .build()?;
     let local_root_signature = dxwr::RootSignature::new(&device)
         .name("local_root_signature")
-        .build_from_desc(
+        .desc(
             &dxwr::RootSignatureDesc::new()
                 .parameters(&[
                     dxwr::RootParameter::new(dxwr::root_parameter_type::Constants32bit)
@@ -104,7 +105,8 @@ fn main() -> anyhow::Result<()> {
                         .into(),
                 ])
                 .flags(D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE),
-        )?;
+        )
+        .build()?;
     let state_object = {
         let local_root_signature = dxwr::LocalRootSignature::new(&local_root_signature);
         dxwr::StateObject::new(&device, D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE)
