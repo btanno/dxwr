@@ -1,6 +1,16 @@
 use super::*;
+use windows::Win32::Foundation::HANDLE;
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::Win32::Graphics::Dxgi::Common::*;
+use windows::core::Interface;
+
+pub trait FromSharedHandle: Sized {
+    unsafe fn from_handle(device: &crate::Device, handle: *mut std::ffi::c_void) -> windows::core::Result<Self>;
+}
+
+pub trait ShareableHandle {
+    fn as_device_child(&self) -> ID3D12DeviceChild;
+}
 
 #[derive(Clone, Debug)]
 pub struct HeapProperties(D3D12_HEAP_PROPERTIES);
@@ -541,6 +551,27 @@ impl PartialEq for Resource {
 
 impl Eq for Resource {}
 
+impl FromSharedHandle for Resource {
+    #[inline]
+    unsafe fn from_handle(device: &crate::Device, handle: *mut std::ffi::c_void) -> windows::core::Result<Self> {
+        unsafe {
+            let mut p = None;
+            let handle: ID3D12Resource = device
+                .handle()
+                .OpenSharedHandle(HANDLE(handle), &mut p)
+                .map(|_| p.unwrap())?;
+            Ok(Self { handle, name: None })
+        }
+    }
+}
+
+impl ShareableHandle for Resource {
+    #[inline]
+    fn as_device_child(&self) -> ID3D12DeviceChild {
+        self.handle.cast().unwrap()
+    }
+}
+
 pub mod heap {
     use super::*;
 
@@ -665,6 +696,36 @@ impl Heap {
     #[inline]
     pub fn handle(&self) -> &ID3D12Heap {
         &self.handle
+    }
+}
+
+impl PartialEq for Heap {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.handle == other.handle
+    }
+}
+
+impl Eq for Heap {}
+
+impl FromSharedHandle for Heap {
+    #[inline]
+    unsafe fn from_handle(device: &crate::Device, handle: *mut std::ffi::c_void) -> windows::core::Result<Self> {
+        unsafe {
+            let mut p = None;
+            let handle: ID3D12Heap = device
+                .handle()
+                .OpenSharedHandle(HANDLE(handle), &mut p)
+                .map(|_| p.unwrap())?;
+            Ok(Self { handle, name: None })
+        }
+    }
+}
+
+impl ShareableHandle for Heap {
+    #[inline]
+    fn as_device_child(&self) -> ID3D12DeviceChild {
+        self.handle.cast().unwrap()
     }
 }
 

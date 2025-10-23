@@ -224,6 +224,7 @@ impl GpuVirtualAddressAndStride {
     }
 }
 
+#[derive(PartialEq, Eq, Debug)]
 pub struct Handle(HANDLE);
 
 impl Handle {
@@ -268,6 +269,21 @@ pub fn align_size(size: u64, align: u64) -> u64 {
 #[inline]
 pub fn align_size_for_constant_buffer(size: u64) -> u64 {
     align_size(size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT as u64)
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct SharedHandle(Arc<Handle>);
+
+impl SharedHandle {
+    #[inline]
+    pub fn new(handle: HANDLE) -> Self {
+        Self(Arc::new(Handle::new(handle)))
+    }
+    
+    #[inline]
+    pub fn handle(&self) -> HANDLE {
+        self.0.0
+    }
 }
 
 #[cfg(test)]

@@ -24,6 +24,10 @@ pub mod com {
     pub use ::windows::core::Interface;
 }
 
+pub mod api {
+    pub use windows::*;
+}
+
 pub mod d3d {
     pub use windows::Win32::Graphics::Direct3D::*;
 }
