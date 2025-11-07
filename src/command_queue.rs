@@ -89,6 +89,21 @@ impl CommandQueue<()> {
     pub fn new_copy(device: &Device) -> Builder<Copy> {
         Builder::new(device.handle())
     }
+
+    #[inline]
+    pub fn new_video_decode(device: &Device) -> Builder<VideoDecode> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_video_encode(device: &Device) -> Builder<VideoEncode> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_video_process(device: &Device) -> Builder<VideoProcess> {
+        Builder::new(device.handle())
+    }
 }
 
 impl<T> CommandQueue<T>
@@ -96,10 +111,10 @@ where
     T: CommandListType,
 {
     #[inline]
-    pub fn execute_command_lists(&self, cmd_lists: &[&GraphicsCommandList<T>]) {
+    pub fn execute_command_lists(&self, cmd_lists: &[&impl CommandList<T>]) {
         let cmd_lists = cmd_lists
             .iter()
-            .map(|l| Some(l.handle().clone().into()))
+            .map(|l| Some(l.as_raw_command_list()))
             .collect::<Vec<Option<ID3D12CommandList>>>();
         unsafe {
             self.handle.ExecuteCommandLists(&cmd_lists);

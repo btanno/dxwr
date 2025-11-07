@@ -1,4 +1,5 @@
 use super::*;
+use crate::resources::ShareableHandle;
 use std::sync::{
     Arc,
     atomic::{self, AtomicU64},
@@ -7,7 +8,6 @@ use std::time::Duration;
 use windows::Win32::Foundation::HANDLE;
 use windows::Win32::Graphics::Direct3D12::*;
 use windows::core::Interface;
-use crate::resources::ShareableHandle;
 
 pub struct Builder {
     device: ID3D12Device,

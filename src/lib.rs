@@ -47,12 +47,10 @@ pub use command_allocator::{
     VideoProcessCommandAllocator,
 };
 pub use command_list::{
-    BundleCommands, BundleGraphicsCommandList, Commands, ComputeCommands,
+    BundleCommands, BundleGraphicsCommandList, CommandList, Commands, ComputeCommands,
     ComputeGraphicsCommandList, CopyCommands, CopyGraphicsCommandList, DirectCommands,
     DirectGraphicsCommandList, DiscardRegion, DispatchRaysDesc, GraphicsCommandList,
-    IndexBufferView, TextureCopyLocation, VertexBufferView, VideoDecodeCommands,
-    VideoDecodeGraphicsCommandList, VideoEncodeCommands, VideoEncodeGraphicsCommandList,
-    VideoProcessCommands, VideoProcessGraphicsCommandList, Viewport,
+    IndexBufferView, TextureCopyLocation, VertexBufferView, Viewport,
 };
 pub use command_queue::{
     CommandQueue, ComputeCommandQueue, CopyCommandQueue, DirectCommandQueue,
@@ -78,7 +76,7 @@ pub use raytracing::{
     RaytracingGeometryDesc, RaytracingInstanceDesc,
 };
 pub use reflection::{LibraryReflection, ReflectionType, ShaderReflection};
-pub use resource_barriers::{AliasingBarrier, TransitionBarrier, UavBarrier, ResourceBarrier};
+pub use resource_barriers::{AliasingBarrier, ResourceBarrier, TransitionBarrier, UavBarrier};
 pub use resources::{ClearValue, Heap, HeapProperties, Resource, ResourceDesc};
 pub use root_signature::{
     DescriptorRange, RootParameter, RootSignature, RootSignatureDesc, StaticSamplerDesc,

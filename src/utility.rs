@@ -279,7 +279,7 @@ impl SharedHandle {
     pub fn new(handle: HANDLE) -> Self {
         Self(Arc::new(Handle::new(handle)))
     }
-    
+
     #[inline]
     pub fn handle(&self) -> HANDLE {
         self.0.0

@@ -3,6 +3,7 @@ use super::descriptor_heap_type::*;
 use super::resource_barriers::*;
 use super::*;
 use windows::Win32::Graphics::{Direct3D::*, Direct3D12::*, Dxgi::Common::DXGI_FORMAT};
+use windows::core::Interface;
 
 #[derive(Clone, Debug)]
 #[repr(transparent)]
@@ -1028,6 +1029,10 @@ where
     }
 }
 
+pub trait CommandList<T> {
+    fn as_raw_command_list(&self) -> ID3D12CommandList;
+}
+
 #[derive(Clone, Debug)]
 pub struct GraphicsCommandList<T = ()> {
     handle: ID3D12GraphicsCommandList7,
@@ -1053,21 +1058,6 @@ impl GraphicsCommandList<()> {
 
     #[inline]
     pub fn new_copy(device: &Device) -> Builder<Copy> {
-        Builder::new(device.handle())
-    }
-
-    #[inline]
-    pub fn new_video_encode(device: &Device) -> Builder<VideoEncode> {
-        Builder::new(device.handle())
-    }
-
-    #[inline]
-    pub fn new_video_process(device: &Device) -> Builder<VideoProcess> {
-        Builder::new(device.handle())
-    }
-
-    #[inline]
-    pub fn new_video_decode(device: &Device) -> Builder<VideoDecode> {
         Builder::new(device.handle())
     }
 }
@@ -1165,18 +1155,21 @@ impl GraphicsCommandList<command_list_type::VideoProcess> {
     }
 }
 
+impl<T> CommandList<T> for GraphicsCommandList<T>
+where
+    T: CommandListType,
+{
+    fn as_raw_command_list(&self) -> ID3D12CommandList {
+        self.handle().cast().unwrap()
+    }
+}
+
 pub type DirectGraphicsCommandList = GraphicsCommandList<command_list_type::Direct>;
 pub type ComputeGraphicsCommandList = GraphicsCommandList<command_list_type::Compute>;
 pub type BundleGraphicsCommandList = GraphicsCommandList<command_list_type::Bundle>;
 pub type CopyGraphicsCommandList = GraphicsCommandList<command_list_type::Copy>;
-pub type VideoDecodeGraphicsCommandList = GraphicsCommandList<command_list_type::VideoDecode>;
-pub type VideoEncodeGraphicsCommandList = GraphicsCommandList<command_list_type::VideoEncode>;
-pub type VideoProcessGraphicsCommandList = GraphicsCommandList<command_list_type::VideoProcess>;
 
 pub type DirectCommands<'a> = Commands<'a, command_list_type::Direct>;
 pub type ComputeCommands<'a> = Commands<'a, command_list::Compute>;
 pub type BundleCommands<'a> = Commands<'a, command_list_type::Bundle>;
 pub type CopyCommands<'a> = Commands<'a, command_list_type::Copy>;
-pub type VideoDecodeCommands<'a> = Commands<'a, command_list_type::VideoDecode>;
-pub type VideoEncodeCommands<'a> = Commands<'a, command_list_type::VideoEncode>;
-pub type VideoProcessCommands<'a> = Commands<'a, command_list_type::VideoProcess>;
