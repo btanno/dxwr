@@ -78,7 +78,7 @@ pub use raytracing::{
     RaytracingGeometryDesc, RaytracingInstanceDesc,
 };
 pub use reflection::{LibraryReflection, ReflectionType, ShaderReflection};
-pub use resource_barriers::{AliasingBarrier, TransitionBarrier, UavBarrier};
+pub use resource_barriers::{AliasingBarrier, TransitionBarrier, UavBarrier, ResourceBarrier};
 pub use resources::{ClearValue, Heap, HeapProperties, Resource, ResourceDesc};
 pub use root_signature::{
     DescriptorRange, RootParameter, RootSignature, RootSignatureDesc, StaticSamplerDesc,
