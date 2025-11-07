@@ -114,7 +114,7 @@ where
     pub fn execute_command_lists(&self, cmd_lists: &[&impl CommandList<T>]) {
         let cmd_lists = cmd_lists
             .iter()
-            .map(|l| Some(l.as_raw()))
+            .map(|l| Some(l.as_raw_command_list()))
             .collect::<Vec<Option<ID3D12CommandList>>>();
         unsafe {
             self.handle.ExecuteCommandLists(&cmd_lists);
