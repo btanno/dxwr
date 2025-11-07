@@ -512,7 +512,7 @@ impl Resource {
     }
 
     #[inline]
-    pub(crate) fn from_raw(handle: ID3D12Resource) -> Self {
+    pub fn from_raw(handle: ID3D12Resource) -> Self {
         Self { handle, name: None }
     }
 
