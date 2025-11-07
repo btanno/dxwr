@@ -89,6 +89,21 @@ impl CommandQueue<()> {
     pub fn new_copy(device: &Device) -> Builder<Copy> {
         Builder::new(device.handle())
     }
+
+    #[inline]
+    pub fn new_video_decode(device: &Device) -> Builder<VideoDecode> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_video_encode(device: &Device) -> Builder<VideoEncode> {
+        Builder::new(device.handle())
+    }
+
+    #[inline]
+    pub fn new_video_process(device: &Device) -> Builder<VideoProcess> {
+        Builder::new(device.handle())
+    }
 }
 
 impl<T> CommandQueue<T>
