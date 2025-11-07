@@ -111,10 +111,10 @@ where
     T: CommandListType,
 {
     #[inline]
-    pub fn execute_command_lists(&self, cmd_lists: &[&GraphicsCommandList<T>]) {
+    pub fn execute_command_lists(&self, cmd_lists: &[&impl CommandList<T>]) {
         let cmd_lists = cmd_lists
             .iter()
-            .map(|l| Some(l.handle().clone().into()))
+            .map(|l| Some(l.to_raw()))
             .collect::<Vec<Option<ID3D12CommandList>>>();
         unsafe {
             self.handle.ExecuteCommandLists(&cmd_lists);

@@ -5,7 +5,10 @@ use windows::Win32::Graphics::Dxgi::Common::*;
 use windows::core::Interface;
 
 pub trait FromSharedHandle: Sized {
-    unsafe fn from_handle(device: &crate::Device, handle: *mut std::ffi::c_void) -> windows::core::Result<Self>;
+    unsafe fn from_handle(
+        device: &crate::Device,
+        handle: *mut std::ffi::c_void,
+    ) -> windows::core::Result<Self>;
 }
 
 pub trait ShareableHandle {
@@ -553,7 +556,10 @@ impl Eq for Resource {}
 
 impl FromSharedHandle for Resource {
     #[inline]
-    unsafe fn from_handle(device: &crate::Device, handle: *mut std::ffi::c_void) -> windows::core::Result<Self> {
+    unsafe fn from_handle(
+        device: &crate::Device,
+        handle: *mut std::ffi::c_void,
+    ) -> windows::core::Result<Self> {
         unsafe {
             let mut p = None;
             let handle: ID3D12Resource = device
@@ -710,7 +716,10 @@ impl Eq for Heap {}
 
 impl FromSharedHandle for Heap {
     #[inline]
-    unsafe fn from_handle(device: &crate::Device, handle: *mut std::ffi::c_void) -> windows::core::Result<Self> {
+    unsafe fn from_handle(
+        device: &crate::Device,
+        handle: *mut std::ffi::c_void,
+    ) -> windows::core::Result<Self> {
         unsafe {
             let mut p = None;
             let handle: ID3D12Heap = device
