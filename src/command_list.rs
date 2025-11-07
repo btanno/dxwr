@@ -1030,7 +1030,7 @@ where
 }
 
 pub trait CommandList<T> {
-    fn to_raw(&self) -> ID3D12CommandList;
+    fn as_raw(&self) -> ID3D12CommandList;
 }
 
 #[derive(Clone, Debug)]
@@ -1159,7 +1159,7 @@ impl<T> CommandList<T> for GraphicsCommandList<T>
 where
     T: CommandListType,
 {
-    fn to_raw(&self) -> ID3D12CommandList {
+    fn as_raw(&self) -> ID3D12CommandList {
         self.handle().cast().unwrap()
     }
 }
