@@ -7,7 +7,7 @@ use windows::core::Interface;
 
 #[derive(Clone, Debug)]
 #[repr(transparent)]
-pub struct Viewport(D3D12_VIEWPORT);
+pub struct Viewport(pub D3D12_VIEWPORT);
 
 impl Viewport {
     #[inline]
