@@ -9,7 +9,7 @@ use windows::core::HSTRING;
 
 #[derive(Clone, Copy, Debug)]
 #[repr(transparent)]
-pub struct Rect(windows::Win32::Foundation::RECT);
+pub struct Rect(pub windows::Win32::Foundation::RECT);
 
 impl Rect {
     #[inline]
